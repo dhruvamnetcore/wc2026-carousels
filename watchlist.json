@@ -3,6 +3,8 @@
 
   "source": "thesportsdb",
 
+  "handle": "@fwc_2k26",
+
   "autoLeagues": ["World Cup"],
 
   "autoPost": false,

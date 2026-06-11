@@ -43,6 +43,7 @@ for (const f of todo) {
      fall back to the cutout URL the fetcher embedded (data.motm.img), pulled
      and inlined here so the screenshot never races an async image load. */
   let photo = null;
+  let photoIsRemote = false; // tint only auto-fetched photos, not your own photos/ image
   if (data.motm?.name) {
     const ps = pslug(data.motm.name);
     for (const ext of ["png", "jpg", "jpeg"]) {
@@ -59,6 +60,7 @@ for (const f of todo) {
         if (r.ok) {
           const ct = r.headers.get("content-type") || "image/png";
           photo = `data:${ct};base64,` + Buffer.from(await r.arrayBuffer()).toString("base64");
+          photoIsRemote = true;
           console.log(`  using remote player photo ${data.motm.img}`);
         }
       } catch (e) { console.log(`  ! couldn't fetch player photo: ${e.message}`); }
@@ -66,13 +68,16 @@ for (const f of todo) {
   }
 
   /* import the match into the live studio page */
-  await page.evaluate((d, slides, img) => {
+  await page.evaluate((d, slides, img, handle, tint) => {
     S.order = slides.slice();
     S.enabled = { cover: false, moments: false, stats: false, motm: false };
     slides.forEach(k => { S.enabled[k] = true; });
     applyMatchJSON(d);
-    if (img) { S.motm.img = img; drawOutput(); }
-  }, data, slidesForMatch, photo);
+    if (handle) S.handle = handle;
+    S.motmTint = !!tint;
+    if (img) S.motm.img = img;
+    drawOutput();
+  }, data, slidesForMatch, photo, CFG.handle || "", photoIsRemote);
 
   /* wait for display fonts and embedded flags */
   await page.evaluate(() => document.fonts.ready);
