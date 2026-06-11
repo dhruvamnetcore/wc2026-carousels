@@ -232,6 +232,14 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .tlv.compact .tlv-txt .who{font-size:calc(var(--u)*28);}
 .tlv.compact .tlv-txt .what{font-size:calc(var(--u)*20);}
 .tlv-empty{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);color:rgba(255,255,255,.5);text-align:center;}
+/* flag band at the top of the timeline — labels which side is which team */
+.tlv-teams{position:absolute;top:calc(var(--u)*238);left:calc(var(--u)*56);right:calc(var(--u)*56);display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*20);z-index:6;}
+.tlv-teams .side{display:flex;align-items:center;gap:calc(var(--u)*16);min-width:0;max-width:calc(var(--u)*360);}
+.tlv-teams .side.r{flex-direction:row-reverse;}
+.tlv-teams .tnm{font-family:'Anton',sans-serif;font-size:calc(var(--u)*30);color:#fff;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:calc(var(--u)*.5);}
+.tlv-fl{height:calc(var(--u)*48);width:auto;flex:0 0 auto;border-radius:calc(var(--u)*7);border:calc(var(--u)*3) solid rgba(255,255,255,.82);box-shadow:0 calc(var(--u)*4) calc(var(--u)*14) rgba(0,0,0,.35);}
+.tlv-score{font-family:'Anton',sans-serif;font-size:calc(var(--u)*46);color:#fff;flex:0 0 auto;letter-spacing:calc(var(--u)*2);}
+.tlv-score i{font-style:normal;opacity:.5;margin:0 calc(var(--u)*10);}
 
 /* Stats */
 .stats{position:absolute;top:calc(var(--u)*290);left:calc(var(--u)*64);right:calc(var(--u)*64);bottom:calc(var(--u)*120);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*52);z-index:5;}
@@ -600,12 +608,12 @@ function grain(){return S.grain?`<div class="grain"></div>`:"";}
    While loading (or if fetch is blocked) a plain hotlinked img shows instead;
    only if that also errors does the flag hide, leaving the themed cover intact. */
 const FLAG_CACHE={};
-function flagImg(t){
+function flagImg(t,cls="cv-flag"){
   if(!t.f)return"";
   const c=FLAG_CACHE[t.f];
-  if(typeof c==="string"&&c.indexOf("data:")===0)return `<img class="cv-flag" src="${c}" alt="">`;
+  if(typeof c==="string"&&c.indexOf("data:")===0)return `<img class="${cls}" src="${c}" alt="">`;
   if(c===undefined)fetchFlag(t.f);
-  return `<img class="cv-flag" src="https://flagcdn.com/w320/${t.f}.png" alt="" onerror="this.style.display='none'">`;
+  return `<img class="${cls}" src="https://flagcdn.com/w320/${t.f}.png" alt="" onerror="this.style.display='none'">`;
 }
 async function fetchFlag(code){
   FLAG_CACHE[code]="pending";
@@ -672,8 +680,15 @@ function buildMoments(A,B){
       : `<div class="tlv-half l"></div><div class="tlv-half r">${min}${ico}${txt}</div>`;
     return `<div class="tlv-row">${node}${body}</div>`;
   }).join(""):`<div class="tlv-empty">ADD MOMENTS IN THE EDITOR</div>`;
+  const tA=team(S.teamA),tB=team(S.teamB);
+  const teamsHead=`<div class="tlv-teams">
+    <div class="side l">${flagImg(tA,"tlv-fl")}<span class="tnm">${esc(tA.n)}</span></div>
+    <div class="tlv-score">${esc(S.scoreA)}<i>–</i>${esc(S.scoreB)}</div>
+    <div class="side r"><span class="tnm">${esc(tB.n)}</span>${flagImg(tB,"tlv-fl")}</div>
+  </div>`;
   return `<div class="art">${dualBg(A,B)}${grain()}
     ${slHead("KEY MOMENTS",A,B)}
+    ${teamsHead}
     <div class="tlv${compact?" compact":""}">${rows}</div>
     ${footer()}
   </div>`;
