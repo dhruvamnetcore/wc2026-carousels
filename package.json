@@ -1,0 +1,9 @@
+{
+  "name": "matchday-pipeline",
+  "private": true,
+  "type": "module",
+  "description": "Fetch finished matches, render Carousel Studio slides headlessly, optionally auto-post to Instagram.",
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}

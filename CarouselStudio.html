@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Carousel Studio — Matchday</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap');
+/* =====================================================================
+   EDITOR CHROME — broadcast-gallery look. The control room stays dark
+   and quiet; the one living element is the scoreboard, and the selected
+   teams' flag colors (--ta / --tb, set from JS) leak into the chrome.
+   ===================================================================== */
+:root{
+  --bg:#0B0E13; --panel:#12161E; --well:#171C26;
+  --line:#232A37; --line2:#323B4C;
+  --ink:#EDEFF4; --mut:#8A93A6;
+  --acc:#F5B942; --accink:#1A1300; --bad:#F87171;
+  --ta:#6CACE4; --tb:#006847; /* live team colors, overwritten on render */
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scrollbar-color:var(--line2) transparent;}
+body{background:var(--bg);color:var(--ink);font-family:'Archivo',sans-serif;padding:0 0 90px;}
+/* faint stadium-light wash in each team's color */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(820px 380px at 10% -8%, color-mix(in srgb, var(--ta) 14%, transparent), transparent 70%),
+             radial-gradient(820px 380px at 90% -8%, color-mix(in srgb, var(--tb) 14%, transparent), transparent 70%);}
+
+/* ---------- app bar: brand · live scoreboard · export ---------- */
+.appbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:16px;
+  padding:11px clamp(14px,4vw,32px);background:rgba(11,14,19,.84);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);}
+.brand{display:flex;align-items:center;gap:10px;white-space:nowrap;}
+.bname{font-family:'Anton',sans-serif;font-size:19px;letter-spacing:1.6px;}
+.bname b{color:var(--acc);font-weight:400;}
+.btag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--mut);
+  border:1px solid var(--line);padding:3px 9px;border-radius:999px;}
+.tags{flex:1;display:flex;justify-content:center;align-items:center;gap:14px;min-width:0;}
+.sb-team{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--mut);max-width:15ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:5px;}
+.sb-team.a{border-bottom:3px solid var(--ta);}
+.sb-team.b{border-bottom:3px solid var(--tb);}
+.sb-score{font-family:'Anton',sans-serif;font-size:24px;letter-spacing:2px;color:var(--ink);}
+.sb-score i{font-style:normal;color:var(--mut);padding:0 5px;}
+@media (max-width:560px){ .btag,.sb-team{display:none;} .tags{justify-content:flex-end;} }
+
+/* ---------- page shell ---------- */
+.wrap{max-width:1280px;margin:0 auto;padding:24px clamp(14px,4vw,32px) 0;position:relative;z-index:1;}
+.sub{color:var(--mut);font-size:14px;line-height:1.65;max-width:660px;margin-bottom:24px;}
+.layout{display:grid;gap:24px;}
+@media (min-width:1080px){
+  .layout{grid-template-columns:minmax(0,1fr) 380px;align-items:start;}
+  .col-prev{position:sticky;top:72px;max-height:calc(100vh - 88px);overflow-y:auto;padding-right:4px;}
+  .col-prev .track{flex-direction:column;overflow:visible;}
+  .col-prev .slide-outer{width:100%;}
+}
+
+/* ---------- panels ---------- */
+.panel{background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--panel) 88%, #000));
+  border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:18px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035), 0 16px 36px -26px rgba(0,0,0,.9);}
+.panel h2{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;letter-spacing:.4px;margin-bottom:16px;flex-wrap:wrap;}
+.step{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--acc);
+  background:color-mix(in srgb,var(--acc) 12%, transparent);
+  border:1px solid color-mix(in srgb,var(--acc) 32%, transparent);
+  padding:3px 8px;border-radius:6px;}
+.panel h2 .hint{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--mut);font-weight:400;}
+
+/* ---------- form controls ---------- */
+input[type=text],input[type=number],input[type=date],select{background:var(--well);border:1px solid var(--line);
+  border-radius:10px;color:var(--ink);padding:11px 12px;font-size:13px;font-family:'JetBrains Mono',monospace;width:100%;
+  transition:border-color .15s, box-shadow .15s;}
+input[type=text]:hover,input[type=number]:hover,input[type=date]:hover,select:hover{border-color:var(--line2);}
+input[type=date]{color-scheme:dark;}
+select{appearance:none;cursor:pointer;padding-right:34px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238A93A6' stroke-width='1.6' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 13px center;}
+textarea{width:100%;min-height:96px;background:var(--well);border:1px solid var(--line);border-radius:12px;color:var(--ink);
+  padding:14px;font-size:14px;line-height:1.55;resize:vertical;font-family:inherit;transition:border-color .15s, box-shadow .15s;}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:none;border-color:var(--acc);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 22%, transparent);}
+input[type=file]{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--mut);}
+input[type=file]::file-selector-button{background:var(--well);border:1px solid var(--line2);color:var(--ink);border-radius:8px;
+  padding:8px 13px;margin-right:10px;font-family:'Archivo',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:.15s;}
+input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(--acc);}
+.row{display:flex;flex-wrap:wrap;gap:20px;margin-top:16px;align-items:flex-end;}
+.lbl,.fld small{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut);margin-bottom:7px;}
+
+/* ---------- buttons ---------- */
+.exp{position:relative;background:linear-gradient(180deg,#ffffff,#E8E9EF);color:#101014;border:none;border-radius:10px;
+  padding:10px 18px 12px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 10px 20px -12px rgba(0,0,0,.9);transition:transform .15s;}
+.exp::after{content:"";position:absolute;left:9px;right:9px;bottom:5px;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--ta),var(--tb));}
+.exp:hover{transform:translateY(-1px);}
+.exp:active{transform:translateY(0);}
+.exp:disabled{opacity:.55;cursor:wait;transform:none;}
+.ghost{background:var(--well);border:1px solid var(--line2);color:var(--ink);border-radius:10px;padding:11px 16px;
+  font-weight:700;font-size:13px;font-family:inherit;cursor:pointer;transition:.15s;white-space:nowrap;}
+.ghost:hover{border-color:var(--acc);color:var(--acc);}
+.copy{background:var(--acc);color:var(--accink);border:none;border-radius:8px;padding:6px 13px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s;}
+.copy:hover{filter:brightness(1.06);}
+.err{color:var(--bad);margin-top:14px;font-size:13px;line-height:1.5;background:color-mix(in srgb,var(--bad) 9%, transparent);
+  border:1px solid color-mix(in srgb,var(--bad) 30%, transparent);border-radius:10px;padding:10px 14px;}
+.hidden{display:none;}
+
+/* ---------- chips: segmented pill toggles ---------- */
+.chips{display:inline-flex;gap:2px;background:var(--well);border:1px solid var(--line);border-radius:999px;padding:3px;}
+.chip{background:transparent;border:none;color:var(--mut);padding:6px 13px;border-radius:999px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;}
+.chip:hover{color:var(--ink);}
+.chip.on{background:var(--acc);color:var(--accink);box-shadow:0 4px 12px -5px rgba(245,185,66,.7);}
+
+/* ---------- match setup grid ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;}
+.team-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle;}
+
+/* ---------- slide order cards ---------- */
+.scards{display:flex;flex-direction:column;gap:8px;}
+.scard{display:flex;align-items:center;gap:12px;background:var(--well);border:1px solid var(--line);border-radius:12px;
+  padding:11px 14px;cursor:grab;transition:border-color .15s, transform .15s, opacity .15s;}
+.scard:hover{border-color:var(--line2);}
+.scard.dragging{opacity:.45;transform:scale(.985);}
+.scard .grip{color:#4A5468;font-size:15px;cursor:grab;}
+.scard label{display:flex;align-items:center;gap:10px;font-size:13.5px;font-weight:700;flex:1;cursor:pointer;}
+.scard input[type=checkbox]{appearance:none;width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line2);
+  background:transparent;cursor:pointer;position:relative;flex:0 0 auto;transition:.15s;}
+.scard input[type=checkbox]:checked{background:var(--acc);border-color:var(--acc);}
+.scard input[type=checkbox]:checked::after{content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:var(--accink);}
+.scard .mini{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mut);background:var(--panel);border:1px solid var(--line);padding:2px 7px;border-radius:5px;}
+.scard .mv{display:flex;gap:4px;}
+.scard .mv button{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:11px;transition:.15s;}
+.scard .mv button:hover{color:var(--acc);border-color:var(--acc);}
+
+/* ---------- moments / stats / motm editors ---------- */
+.mrow{display:grid;grid-template-columns:64px 84px 120px 1fr 1fr 34px;gap:8px;margin-bottom:8px;align-items:center;}
+.mrow .del{background:transparent;border:1px solid var(--line);color:var(--bad);border-radius:9px;height:40px;cursor:pointer;transition:.15s;}
+.mrow .del:hover{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%, transparent);}
+.add{background:transparent;border:1px dashed var(--line2);color:var(--mut);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;}
+.add:hover:not(:disabled){border-color:var(--acc);color:var(--acc);}
+.add:disabled{opacity:.4;cursor:not-allowed;}
+.strow{display:grid;grid-template-columns:90px 1fr 90px;gap:10px;align-items:center;margin-bottom:8px;}
+.strow .stl{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:var(--mut);text-transform:uppercase;}
+.photo-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px;}
+.photo-thumb{width:54px;height:54px;border-radius:12px;background:var(--well);border:1px solid var(--line);object-fit:cover;}
+@media (max-width:680px){
+  .mrow{grid-template-columns:56px 76px 1fr 34px;}
+  .mrow .mwide{grid-column:1/-1;}
+}
+
+/* ---------- preview rail ---------- */
+.track{display:flex;gap:16px;overflow-x:auto;padding:4px 0 14px;scroll-snap-type:x mandatory;counter-reset:slide;}
+.cap{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:16px;}
+.cap-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.cap-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--acc);}
+.disc{font-size:11.5px;color:var(--mut);margin-top:14px;line-height:1.55;}
+::-webkit-scrollbar{height:8px;width:8px;}
+::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px;}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+
+/* =====================================================================
+   SLIDE CANVAS — fixed 1080x1350 design grid (4:5).
+   Every dimension derives from one base unit --u (1 design px);
+   the whole canvas is scaled by a single factor for preview, and
+   exported at scale 1 → exact 1080x1350 PNG. Nothing can overflow.
+   ===================================================================== */
+.slide-outer{flex:0 0 auto;width:min(300px,78vw);aspect-ratio:4/5;border-radius:16px;overflow:hidden;scroll-snap-align:start;position:relative;border:1px solid var(--line);box-shadow:0 20px 44px -26px rgba(0,0,0,.95);counter-increment:slide;transition:transform .2s, box-shadow .2s;}
+.slide-outer:hover{transform:translateY(-3px);box-shadow:0 26px 50px -26px rgba(0,0,0,1);}
+.slide-outer::after{content:"0" counter(slide);position:absolute;top:9px;left:9px;z-index:5;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:#fff;background:rgba(8,8,12,.6);border:1px solid rgba(255,255,255,.14);padding:2px 7px;border-radius:6px;pointer-events:none;}
+.art{--u:1px;width:1080px;height:1350px;position:relative;overflow:hidden;background:#0c0c12;font-family:'Archivo',sans-serif;transform-origin:top left;}
+.art .layer{position:absolute;inset:0;}
+.art .pat{position:absolute;inset:0;opacity:.1;pointer-events:none;}
+.art .grain{position:absolute;inset:0;opacity:.08;pointer-events:none;background-size:calc(var(--u)*220) calc(var(--u)*220);background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/></filter><rect width="220" height="220" filter="url(%23n)" opacity="0.65"/></svg>');}
+.art .ftr{position:absolute;left:0;right:0;bottom:0;height:calc(var(--u)*86);display:flex;align-items:center;justify-content:space-between;padding:0 calc(var(--u)*56);background:rgba(8,8,12,.62);z-index:9;}
+.art .ftr .hdl{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);letter-spacing:calc(var(--u)*3);color:#fff;}
+.art .ftr .wm{font-family:'Anton',sans-serif;font-size:calc(var(--u)*28);letter-spacing:calc(var(--u)*7);color:#fff;opacity:.9;}
+.art .kick{font-family:'Anton',sans-serif;letter-spacing:calc(var(--u)*4);text-transform:uppercase;}
+
+/* Cover */
+.cv-ftbadge{position:absolute;top:calc(var(--u)*64);left:50%;transform:translateX(-50%) skewX(-8deg);background:#fff;color:#101014;font-family:'Anton',sans-serif;font-size:calc(var(--u)*52);padding:calc(var(--u)*8) calc(var(--u)*44);letter-spacing:calc(var(--u)*4);z-index:5;}
+.cv-comp{position:absolute;top:calc(var(--u)*168);left:0;right:0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);letter-spacing:calc(var(--u)*7);color:#fff;opacity:.92;z-index:5;text-transform:uppercase;}
+.cv-teamA{position:absolute;top:calc(var(--u)*268);left:calc(var(--u)*64);right:calc(var(--u)*64);display:flex;align-items:center;gap:calc(var(--u)*28);font-family:'Anton',sans-serif;font-size:calc(var(--u)*96);line-height:1.02;text-transform:uppercase;z-index:5;letter-spacing:calc(var(--u)*1);}
+.cv-teamB{position:absolute;bottom:calc(var(--u)*220);left:calc(var(--u)*64);right:calc(var(--u)*64);display:flex;align-items:center;justify-content:flex-end;gap:calc(var(--u)*28);font-family:'Anton',sans-serif;font-size:calc(var(--u)*96);line-height:1.02;text-transform:uppercase;z-index:5;letter-spacing:calc(var(--u)*1);}
+.cv-flag{height:calc(var(--u)*112);width:auto;flex:0 0 auto;border-radius:calc(var(--u)*10);border:calc(var(--u)*4) solid rgba(255,255,255,.85);box-shadow:0 calc(var(--u)*8) calc(var(--u)*24) rgba(0,0,0,.35);}
+.cv-plate{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%) skewY(-6deg);background:rgba(8,8,14,.84);padding:calc(var(--u)*4) calc(var(--u)*76);z-index:6;display:flex;align-items:center;gap:calc(var(--u)*30);}
+.cv-score{font-family:'Anton',sans-serif;font-size:calc(var(--u)*290);line-height:1;color:#fff;}
+.cv-dash{font-family:'Anton',sans-serif;font-size:calc(var(--u)*150);color:#fff;opacity:.55;transform:translateY(calc(var(--u)*-14));}
+.cv-meta{position:absolute;bottom:calc(var(--u)*120);left:0;right:0;text-align:center;z-index:6;}
+.cv-meta span{display:inline-block;background:rgba(8,8,14,.7);color:#fff;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);letter-spacing:calc(var(--u)*2.5);padding:calc(var(--u)*12) calc(var(--u)*30);border-radius:calc(var(--u)*8);}
+
+/* Generic slide header (moments / stats / motm) */
+.sl-head{position:absolute;top:calc(var(--u)*72);left:calc(var(--u)*64);right:calc(var(--u)*64);z-index:5;}
+.sl-head .kick{font-size:calc(var(--u)*72);color:#fff;display:block;}
+.sl-head .subline{margin-top:calc(var(--u)*14);font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*24);letter-spacing:calc(var(--u)*3);color:rgba(255,255,255,.75);text-transform:uppercase;}
+.sl-rule{margin-top:calc(var(--u)*24);height:calc(var(--u)*8);width:calc(var(--u)*220);transform:skewX(-20deg);}
+
+/* Key moments */
+.tl{position:absolute;top:calc(var(--u)*280);bottom:calc(var(--u)*120);left:calc(var(--u)*64);right:calc(var(--u)*64);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*44);z-index:5;}
+.tl::before{content:"";position:absolute;left:calc(var(--u)*86);top:0;bottom:0;width:calc(var(--u)*5);background:rgba(255,255,255,.18);border-radius:calc(var(--u)*3);}
+.ev{display:flex;align-items:center;gap:calc(var(--u)*30);position:relative;}
+.ev .min{flex:0 0 calc(var(--u)*172);height:calc(var(--u)*88);display:flex;align-items:center;justify-content:center;font-family:'Anton',sans-serif;font-size:calc(var(--u)*46);transform:skewX(-8deg);z-index:2;}
+.ev .ico{font-size:calc(var(--u)*52);line-height:1;flex:0 0 auto;}
+.ev .who{font-size:calc(var(--u)*40);font-weight:800;color:#fff;line-height:1.1;text-transform:uppercase;letter-spacing:calc(var(--u)*0.5);}
+.ev .what{font-size:calc(var(--u)*28);color:rgba(255,255,255,.72);line-height:1.25;margin-top:calc(var(--u)*6);}
+.ev .typetag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*20);letter-spacing:calc(var(--u)*2);padding:calc(var(--u)*3) calc(var(--u)*12);border-radius:calc(var(--u)*5);background:rgba(255,255,255,.14);color:#fff;margin-left:calc(var(--u)*14);vertical-align:middle;}
+.tl-empty{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);color:rgba(255,255,255,.5);text-align:center;}
+/* compact mode kicks in above 6 events so up to 10 fit without overflow */
+.tl.compact{gap:calc(var(--u)*20);}
+.tl.compact .ev{gap:calc(var(--u)*22);}
+.tl.compact .ev .min{flex-basis:calc(var(--u)*132);height:calc(var(--u)*62);font-size:calc(var(--u)*34);}
+.tl.compact .ev .ico{font-size:calc(var(--u)*38);}
+.tl.compact .ev .who{font-size:calc(var(--u)*32);}
+.tl.compact .ev .what{font-size:calc(var(--u)*23);margin-top:calc(var(--u)*3);}
+.tl.compact .ev .typetag{font-size:calc(var(--u)*17);}
+.tl.compact::before{left:calc(var(--u)*66);}
+
+/* Stats */
+.stats{position:absolute;top:calc(var(--u)*290);left:calc(var(--u)*64);right:calc(var(--u)*64);bottom:calc(var(--u)*120);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*52);z-index:5;}
+.st-lbl{text-align:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*24);letter-spacing:calc(var(--u)*4);color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:calc(var(--u)*14);}
+.st-row{display:flex;align-items:center;gap:calc(var(--u)*26);}
+.st-num{flex:0 0 calc(var(--u)*120);font-family:'Anton',sans-serif;font-size:calc(var(--u)*58);color:#fff;line-height:1;}
+.st-num.r{text-align:right;}
+.st-bars{flex:1;display:flex;height:calc(var(--u)*26);gap:calc(var(--u)*6);}
+.st-half{flex:1;display:flex;background:rgba(255,255,255,.1);transform:skewX(-18deg);overflow:hidden;}
+.st-half.l{justify-content:flex-end;}
+.st-fill{height:100%;}
+.poss{display:flex;height:calc(var(--u)*72);transform:skewX(-18deg);overflow:hidden;border-radius:calc(var(--u)*6);}
+.poss div{display:flex;align-items:center;font-family:'Anton',sans-serif;font-size:calc(var(--u)*44);padding:0 calc(var(--u)*28);}
+.poss .pb{justify-content:flex-end;}
+
+/* MOTM */
+.motm-card{position:absolute;left:50%;top:calc(var(--u)*300);transform:translateX(-50%);width:calc(var(--u)*660);height:calc(var(--u)*880);border-radius:calc(var(--u)*40);overflow:hidden;z-index:5;display:flex;flex-direction:column;align-items:center;padding:calc(var(--u)*40) calc(var(--u)*40) calc(var(--u)*34);}
+.motm-top{width:100%;display:flex;justify-content:space-between;align-items:flex-start;}
+.motm-rate{font-family:'Anton',sans-serif;font-size:calc(var(--u)*120);line-height:.95;}
+.motm-pos{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*28);letter-spacing:calc(var(--u)*3);margin-top:calc(var(--u)*8);text-transform:uppercase;}
+.motm-photo{width:calc(var(--u)*360);height:calc(var(--u)*360);border-radius:50%;object-fit:cover;border:calc(var(--u)*8) solid rgba(255,255,255,.85);margin-top:calc(var(--u)*-30);background:rgba(0,0,0,.25);}
+.motm-photo.ph{display:flex;align-items:center;justify-content:center;font-size:calc(var(--u)*120);}
+.motm-name{font-family:'Anton',sans-serif;font-size:calc(var(--u)*64);text-transform:uppercase;text-align:center;line-height:1.05;margin-top:calc(var(--u)*34);letter-spacing:calc(var(--u)*1);}
+.motm-chips{display:flex;gap:calc(var(--u)*18);margin-top:auto;width:100%;}
+.motm-chip{flex:1;background:rgba(8,8,14,.42);border-radius:calc(var(--u)*16);padding:calc(var(--u)*16) calc(var(--u)*8);text-align:center;}
+.motm-chip .cl{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*19);letter-spacing:calc(var(--u)*1.5);text-transform:uppercase;opacity:.8;}
+.motm-chip .cvv{font-family:'Anton',sans-serif;font-size:calc(var(--u)*52);line-height:1.1;margin-top:calc(var(--u)*4);}
+</style>
+</head>
+<body>
+<header class="appbar">
+  <div class="brand">
+    <span class="bname">CAROUSEL<b>STUDIO</b></span>
+    <span class="btag">MATCHDAY</span>
+  </div>
+  <div class="tags" id="tagsbox"></div>
+  <button class="exp" id="export">⬇ Export PNGs · 1080×1350</button>
+</header>
+<div class="wrap">
+  <p class="sub">World Cup 2026 match carousels. Pick the two nations and every slide auto-themes from both flags — type the data in (or import a match file) and export.</p>
+
+  <div class="layout">
+  <div class="col-edit">
+
+  <!-- 1) MATCH SETUP -->
+  <div class="panel">
+    <h2><span class="step">01</span>Match setup<span class="hint">themes every slide</span></h2>
+    <div class="grid">
+      <div class="fld"><small>Team A (left / top)</small><select id="teamA"></select></div>
+      <div class="fld"><small>Team B (right / bottom)</small><select id="teamB"></select></div>
+      <div class="fld"><small>Score A</small><input id="scoreA" type="number" min="0" value="2"></div>
+      <div class="fld"><small>Score B</small><input id="scoreB" type="number" min="0" value="1"></div>
+      <div class="fld"><small>Venue</small><input id="venue" type="text" placeholder="Stadium, City"></div>
+      <div class="fld"><small>Date</small><input id="mdate" type="date"></div>
+      <div class="fld"><small>Competition label</small><input id="comp" type="text" value="International Friendly"></div>
+      <div class="fld"><small>Your @handle</small><input id="handle" type="text" value="@yourhandle"></div>
+    </div>
+    <div class="row" style="align-items:flex-end;">
+      <div style="flex:1;min-width:240px;">
+        <span class="lbl">GitHub repo URL (saved on this device)</span>
+        <input id="repoUrl" type="text" placeholder="https://github.com/you/matchday — or a raw link to any match .json">
+      </div>
+      <button class="ghost" id="loadLatest">⚡ Load latest match</button>
+    </div>
+    <div class="row">
+      <div>
+        <span class="lbl">Import overnight match JSON</span>
+        <input id="importJson" type="file" accept=".json,application/json" style="width:auto;background:none;border:none;padding:0;color:#8b8f99;font-size:12px;">
+      </div>
+      <div><span class="lbl">Pattern overlay</span><div class="chips" id="patChips"></div></div>
+      <div><span class="lbl">Grain texture</span><div class="chips" id="grainChips"></div></div>
+    </div>
+  </div>
+
+  <!-- 2) SLIDES: include + reorder -->
+  <div class="panel">
+    <h2><span class="step">02</span>Slides<span class="hint">tick to include · drag or ▲▼ to reorder</span></h2>
+    <div class="scards" id="scards"></div>
+  </div>
+
+  <!-- Key moments editor -->
+  <div class="panel">
+    <h2><span class="step">03</span>Key moments<span class="hint">max 10</span></h2>
+    <div id="mrows"></div>
+    <button class="add" id="addMoment">+ Add moment</button>
+  </div>
+
+  <!-- Stats editor -->
+  <div class="panel">
+    <h2><span class="step">04</span>Match stats<span class="hint">Team A | Team B</span></h2>
+    <div id="strows"></div>
+  </div>
+
+  <!-- MOTM editor -->
+  <div class="panel">
+    <h2><span class="step">05</span>Player of the match</h2>
+    <div class="grid">
+      <div class="fld"><small>Player name</small><input id="pmName" type="text" placeholder="Player name"></div>
+      <div class="fld"><small>Position</small><input id="pmPos" type="text" placeholder="e.g. CAM"></div>
+      <div class="fld"><small>Rating</small><input id="pmRate" type="text" value="9.2"></div>
+      <div class="fld"><small>His team</small><select id="pmTeam"><option value="A">Team A</option><option value="B">Team B</option></select></div>
+      <div class="fld"><small>Chip 1 (label / value)</small><div style="display:flex;gap:6px;"><input id="c1l" type="text" value="GOALS"><input id="c1v" type="text" value="2"></div></div>
+      <div class="fld"><small>Chip 2</small><div style="display:flex;gap:6px;"><input id="c2l" type="text" value="ASSISTS"><input id="c2v" type="text" value="1"></div></div>
+      <div class="fld"><small>Chip 3</small><div style="display:flex;gap:6px;"><input id="c3l" type="text" value="KEY PASSES"><input id="c3v" type="text" value="4"></div></div>
+    </div>
+    <div class="photo-row">
+      <span class="lbl" style="margin:0;">Player photo</span>
+      <input id="pmPhoto" type="file" accept="image/*" style="width:auto;background:none;border:none;padding:0;color:#8b8f99;font-size:12px;">
+      <img id="pmThumb" class="photo-thumb hidden" alt="">
+      <button class="add" id="pmClear" style="padding:6px 12px;">Clear</button>
+    </div>
+  </div>
+
+  </div><!-- /col-edit -->
+
+  <!-- PREVIEW RAIL -->
+  <div id="out" class="col-prev">
+    <div class="track" id="track"></div>
+    <div class="cap">
+      <div class="cap-head">
+        <span class="cap-lbl">CAPTION (manual)</span>
+        <button class="copy" id="copyCap">Copy</button>
+      </div>
+      <textarea id="cap" placeholder="Write your caption here…"></textarea>
+    </div>
+    <p class="disc">Unofficial fan graphic — flag colors only; no FIFA / federation marks, crests, or official typefaces are used. Verify scores, names and stats before publishing.</p>
+    <div class="err hidden" id="err"></div>
+  </div>
+  </div><!-- /layout -->
+</div>
+
+<script>
+/* =====================================================================
+   TEAMS — 2026 WC qualified nations + common friendly opponents.
+   c = [primary, secondary, accent] taken from each FLAG's colors only.
+   ===================================================================== */
+const TEAMS=[
+ {n:"Algeria",f:"dz",c:["#006233","#FFFFFF","#D21034"]},
+ {n:"Argentina",f:"ar",c:["#6CACE4","#FFFFFF","#F6B40E"]},
+ {n:"Australia",f:"au",c:["#012169","#FFFFFF","#E4002B"]},
+ {n:"Austria",f:"at",c:["#ED2939","#FFFFFF","#ED2939"]},
+ {n:"Belgium",f:"be",c:["#000000","#FDDA24","#EF3340"]},
+ {n:"Bolivia",f:"bo",c:["#D52B1E","#F9E300","#007934"]},
+ {n:"Bosnia & Herzegovina",f:"ba",c:["#002F6C","#FECB00","#FFFFFF"]},
+ {n:"Brazil",f:"br",c:["#009739","#FEDD00","#012169"]},
+ {n:"Cameroon",f:"cm",c:["#007A5E","#FCD116","#CE1126"]},
+ {n:"Canada",f:"ca",c:["#D80621","#FFFFFF","#D80621"]},
+ {n:"Cape Verde",f:"cv",c:["#003893","#FFFFFF","#CF2027"]},
+ {n:"Chile",f:"cl",c:["#D52B1E","#FFFFFF","#0039A6"]},
+ {n:"Colombia",f:"co",c:["#FCD116","#003893","#CE1126"]},
+ {n:"Costa Rica",f:"cr",c:["#002B7F","#FFFFFF","#CE1126"]},
+ {n:"Croatia",f:"hr",c:["#C8102E","#FFFFFF","#1B4298"]},
+ {n:"Curaçao",f:"cw",c:["#002B7F","#F9E814","#FFFFFF"]},
+ {n:"Czechia",f:"cz",c:["#D7141A","#FFFFFF","#11457E"]},
+ {n:"Denmark",f:"dk",c:["#C8102E","#FFFFFF","#C8102E"]},
+ {n:"DR Congo",f:"cd",c:["#007FFF","#F7D618","#CE1021"]},
+ {n:"Ecuador",f:"ec",c:["#FFDD00","#034EA2","#ED1C24"]},
+ {n:"Egypt",f:"eg",c:["#CE1126","#FFFFFF","#000000"]},
+ {n:"England",f:"gb-eng",c:["#CE1124","#FFFFFF","#CE1124"]},
+ {n:"France",f:"fr",c:["#002395","#FFFFFF","#ED2939"]},
+ {n:"Germany",f:"de",c:["#000000","#FFCE00","#DD0000"]},
+ {n:"Ghana",f:"gh",c:["#CE1126","#FCD116","#006B3F"]},
+ {n:"Greece",f:"gr",c:["#0D5EAF","#FFFFFF","#0D5EAF"]},
+ {n:"Haiti",f:"ht",c:["#00209F","#D21034","#FFFFFF"]},
+ {n:"Honduras",f:"hn",c:["#0073CF","#FFFFFF","#0073CF"]},
+ {n:"Iran",f:"ir",c:["#239F40","#FFFFFF","#DA0000"]},
+ {n:"Iraq",f:"iq",c:["#CE1126","#FFFFFF","#007A3D"]},
+ {n:"Ireland",f:"ie",c:["#169B62","#FFFFFF","#FF883E"]},
+ {n:"Italy",f:"it",c:["#008C45","#FFFFFF","#CD212A"]},
+ {n:"Ivory Coast",f:"ci",c:["#FF8200","#FFFFFF","#009A44"]},
+ {n:"Jamaica",f:"jm",c:["#009B3A","#FED100","#000000"]},
+ {n:"Japan",f:"jp",c:["#BC002D","#FFFFFF","#BC002D"]},
+ {n:"Jordan",f:"jo",c:["#007A3D","#FFFFFF","#CE1126"]},
+ {n:"Mali",f:"ml",c:["#14B53A","#FCD116","#CE1126"]},
+ {n:"Mexico",f:"mx",c:["#006847","#FFFFFF","#CE1126"]},
+ {n:"Morocco",f:"ma",c:["#C1272D","#006233","#C1272D"]},
+ {n:"Netherlands",f:"nl",c:["#AE1C28","#FFFFFF","#21468B"]},
+ {n:"New Zealand",f:"nz",c:["#012169","#FFFFFF","#C8102E"]},
+ {n:"Nigeria",f:"ng",c:["#008751","#FFFFFF","#008751"]},
+ {n:"Norway",f:"no",c:["#BA0C2F","#FFFFFF","#00205B"]},
+ {n:"Panama",f:"pa",c:["#DA121A","#FFFFFF","#072357"]},
+ {n:"Paraguay",f:"py",c:["#D52B1E","#FFFFFF","#0038A8"]},
+ {n:"Peru",f:"pe",c:["#D91023","#FFFFFF","#D91023"]},
+ {n:"Poland",f:"pl",c:["#DC143C","#FFFFFF","#DC143C"]},
+ {n:"Portugal",f:"pt",c:["#046A38","#DA291C","#FFE900"]},
+ {n:"Qatar",f:"qa",c:["#8A1538","#FFFFFF","#8A1538"]},
+ {n:"Saudi Arabia",f:"sa",c:["#006C35","#FFFFFF","#006C35"]},
+ {n:"Scotland",f:"gb-sct",c:["#0065BF","#FFFFFF","#0065BF"]},
+ {n:"Senegal",f:"sn",c:["#00853F","#FDEF42","#E31B23"]},
+ {n:"Serbia",f:"rs",c:["#C6363C","#0C4076","#FFFFFF"]},
+ {n:"South Africa",f:"za",c:["#007749","#FFB81C","#E03C31"]},
+ {n:"South Korea",f:"kr",c:["#CD2E3A","#0047A0","#FFFFFF"]},
+ {n:"Spain",f:"es",c:["#AA151B","#F1BF00","#AA151B"]},
+ {n:"Sweden",f:"se",c:["#006AA7","#FECC02","#006AA7"]},
+ {n:"Switzerland",f:"ch",c:["#DA291C","#FFFFFF","#DA291C"]},
+ {n:"Tunisia",f:"tn",c:["#E70013","#FFFFFF","#E70013"]},
+ {n:"Türkiye",f:"tr",c:["#E30A17","#FFFFFF","#E30A17"]},
+ {n:"Ukraine",f:"ua",c:["#0057B7","#FFD700","#0057B7"]},
+ {n:"Uruguay",f:"uy",c:["#0038A8","#FFFFFF","#FCD116"]},
+ {n:"USA",f:"us",c:["#B22234","#FFFFFF","#3C3B6E"]},
+ {n:"Uzbekistan",f:"uz",c:["#0099B5","#FFFFFF","#CE1126"]},
+ {n:"Venezuela",f:"ve",c:["#FFCC00","#00247D","#CF142B"]},
+ {n:"Wales",f:"gb-wls",c:["#C8102E","#FFFFFF","#00B140"]},
+];
+
+/* ---------- color helpers ---------- */
+function hx(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function rgbHex(a){return '#'+a.map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');}
+function mix(c1,c2,t){const a=hx(c1),b=hx(c2);return rgbHex(a.map((v,i)=>v+(b[i]-v)*t));}
+function lum(c){const[r,g,b]=hx(c).map(v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4);});return .2126*r+.7152*g+.0722*b;}
+function inkOn(c){return lum(c)>0.45?'#101014':'#ffffff';}
+function alpha(c,a){const[r,g,b]=hx(c);return `rgba(${r},${g},${b},${a})`;}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* Theme object derived from a team's flag colors */
+function teamTheme(t){
+  const p=t.c[0],s=t.c[1],a=t.c[2]||t.c[1];
+  return {
+    primary:p, secondary:s, accent:a,
+    deep:mix(p,'#0a0a10',0.62),                       // dark base for body slides
+    ink:inkOn(p),
+    gradient:`linear-gradient(150deg, ${mix(p,'#000000',0.18)} 0%, ${p} 48%, ${mix(p,a,0.4)} 100%)`,
+    pattern:s,                                        // pattern overlay color
+  };
+}
+
+/* ---------- state ---------- */
+const SLIDE_DEFS={cover:"Cover (FT scoreline)",moments:"Key Moments timeline",stats:"Match Stats",motm:"MOTM player card"};
+const S={
+  teamA:"Argentina", teamB:"Mexico",
+  scoreA:2, scoreB:1, venue:"", date:"", comp:"International Friendly", handle:"@yourhandle",
+  pattern:"stripes", grain:true,
+  order:["cover","moments","stats","motm"],
+  enabled:{cover:true,moments:true,stats:true,motm:true},
+  moments:[{min:"23",team:"A",type:"goal",who:"",what:""}],
+  stats:{Possession:[55,45],Shots:[14,9],"On target":[6,3],xG:[1.8,0.9],Corners:[7,4]},
+  motm:{name:"",pos:"CAM",rate:"9.2",team:"A",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null},
+};
+const team=n=>TEAMS.find(t=>t.n===n)||TEAMS[0];
+
+/* ---------- editor: match setup ---------- */
+const $=id=>document.getElementById(id);
+function fillTeamSelect(sel,val){
+  sel.innerHTML=TEAMS.map(t=>`<option value="${esc(t.n)}"${t.n===val?' selected':''}>${esc(t.n)}</option>`).join('');
+}
+fillTeamSelect($("teamA"),S.teamA); fillTeamSelect($("teamB"),S.teamB);
+$("mdate").value=new Date().toISOString().slice(0,10); S.date=$("mdate").value;
+
+[["teamA","teamA"],["teamB","teamB"],["scoreA","scoreA"],["scoreB","scoreB"],["venue","venue"],["mdate","date"],["comp","comp"],["handle","handle"]]
+.forEach(([id,key])=>{$(id).addEventListener("input",e=>{S[key]=e.target.value;drawOutput();});});
+
+function chipToggle(el,opts,get,set){
+  el.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("button");
+    b.className="chip"+(get()===o.v?" on":"");
+    b.textContent=o.label;
+    b.onclick=()=>{set(o.v);chipToggle(el,opts,get,set);drawOutput();};
+    el.appendChild(b);
+  });
+}
+chipToggle($("patChips"),[{v:"stripes",label:"Diagonal stripes"},{v:"halftone",label:"Halftone dots"}],()=>S.pattern,v=>S.pattern=v);
+chipToggle($("grainChips"),[{v:true,label:"Grain on"},{v:false,label:"Grain off"}],()=>S.grain,v=>S.grain=v);
+
+/* ---------- editor: slide cards (include + drag/arrow reorder) ---------- */
+let dragKey=null;
+function renderSlideCards(){
+  const box=$("scards");box.innerHTML="";
+  S.order.forEach((k,idx)=>{
+    const card=document.createElement("div");
+    card.className="scard";card.draggable=true;
+    card.innerHTML=`<span class="grip">⠿</span>
+      <label><input type="checkbox" ${S.enabled[k]?"checked":""}> ${SLIDE_DEFS[k]}</label>
+      <span class="mini">${String(idx+1).padStart(2,"0")}</span>
+      <span class="mv"><button type="button" aria-label="Move up">▲</button><button type="button" aria-label="Move down">▼</button></span>`;
+    card.querySelector("input").onchange=e=>{S.enabled[k]=e.target.checked;drawOutput();renderSlideCards();};
+    const [up,down]=card.querySelectorAll(".mv button");
+    up.onclick=()=>{if(idx>0){S.order.splice(idx-1,0,S.order.splice(idx,1)[0]);renderSlideCards();drawOutput();}};
+    down.onclick=()=>{if(idx<S.order.length-1){S.order.splice(idx+1,0,S.order.splice(idx,1)[0]);renderSlideCards();drawOutput();}};
+    card.ondragstart=e=>{dragKey=k;card.classList.add("dragging");e.dataTransfer.effectAllowed="move";};
+    card.ondragend=()=>card.classList.remove("dragging");
+    card.ondragover=e=>e.preventDefault();
+    card.ondrop=e=>{
+      e.preventDefault();
+      if(!dragKey||dragKey===k)return;
+      const from=S.order.indexOf(dragKey),to=S.order.indexOf(k);
+      S.order.splice(to,0,S.order.splice(from,1)[0]);
+      dragKey=null;renderSlideCards();drawOutput();
+    };
+    box.appendChild(card);
+  });
+}
+renderSlideCards();
+
+/* ---------- editor: key moments ---------- */
+const TYPES={goal:{label:"Goal ⚽",ico:"⚽",tag:""},pen:{label:"Penalty ⚽",ico:"⚽",tag:"PEN"},red:{label:"Red card 🟥",ico:"🟥",tag:"RED"}};
+function renderMoments(){
+  const box=$("mrows");box.innerHTML="";
+  S.moments.forEach((m,i)=>{
+    const row=document.createElement("div");row.className="mrow";
+    row.innerHTML=`
+      <input type="text" value="${esc(m.min)}" placeholder="min">
+      <select>${["A","B"].map(t=>`<option value="${t}"${m.team===t?" selected":""}>${t}</option>`).join("")}</select>
+      <select>${Object.keys(TYPES).map(t=>`<option value="${t}"${m.type===t?" selected":""}>${TYPES[t].label}</option>`).join("")}</select>
+      <input class="mwide" type="text" value="${esc(m.who)}" placeholder="Player name">
+      <input class="mwide" type="text" value="${esc(m.what)}" placeholder="Short text (e.g. header from corner)">
+      <button class="del" aria-label="Remove">✕</button>`;
+    const [minI,teamI,typeI,whoI,whatI]=row.querySelectorAll("input,select");
+    minI.oninput=e=>{m.min=e.target.value;drawOutput();};
+    teamI.onchange=e=>{m.team=e.target.value;drawOutput();};
+    typeI.onchange=e=>{m.type=e.target.value;drawOutput();};
+    whoI.oninput=e=>{m.who=e.target.value;drawOutput();};
+    whatI.oninput=e=>{m.what=e.target.value;drawOutput();};
+    row.querySelector(".del").onclick=()=>{S.moments.splice(i,1);renderMoments();drawOutput();};
+    box.appendChild(row);
+  });
+  $("addMoment").disabled=S.moments.length>=10;
+}
+$("addMoment").onclick=()=>{if(S.moments.length<10){S.moments.push({min:"",team:"A",type:"goal",who:"",what:""});renderMoments();drawOutput();}};
+renderMoments();
+
+/* ---------- editor: stats ---------- */
+function renderStats(){
+  const box=$("strows");box.innerHTML="";
+  Object.keys(S.stats).forEach(k=>{
+    const row=document.createElement("div");row.className="strow";
+    row.innerHTML=`<input type="number" step="any" min="0" value="${S.stats[k][0]}"><span class="stl">${esc(k)}</span><input type="number" step="any" min="0" value="${S.stats[k][1]}">`;
+    const [a,b]=row.querySelectorAll("input");
+    a.oninput=e=>{S.stats[k][0]=parseFloat(e.target.value)||0;drawOutput();};
+    b.oninput=e=>{S.stats[k][1]=parseFloat(e.target.value)||0;drawOutput();};
+    box.appendChild(row);
+  });
+}
+renderStats();
+
+/* ---------- editor: MOTM ---------- */
+[["pmName",v=>S.motm.name=v],["pmPos",v=>S.motm.pos=v],["pmRate",v=>S.motm.rate=v],
+ ["c1l",v=>S.motm.chips[0][0]=v],["c1v",v=>S.motm.chips[0][1]=v],
+ ["c2l",v=>S.motm.chips[1][0]=v],["c2v",v=>S.motm.chips[1][1]=v],
+ ["c3l",v=>S.motm.chips[2][0]=v],["c3v",v=>S.motm.chips[2][1]=v]]
+.forEach(([id,set])=>{$(id).addEventListener("input",e=>{set(e.target.value);drawOutput();});});
+$("pmTeam").addEventListener("change",e=>{S.motm.team=e.target.value;drawOutput();});
+$("pmPhoto").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{S.motm.img=r.result;$("pmThumb").src=r.result;$("pmThumb").classList.remove("hidden");drawOutput();};
+  r.readAsDataURL(f);
+});
+$("pmClear").onclick=()=>{S.motm.img=null;$("pmPhoto").value="";$("pmThumb").classList.add("hidden");drawOutput();};
+
+/* =====================================================================
+   SLIDE BUILDERS — every slide gets: pattern overlay (8–12% opacity,
+   flag colors), optional grain, and the footer strip (@handle + wordmark)
+   ===================================================================== */
+function patStyle(color){
+  return S.pattern==="halftone"
+    ? `background-image:radial-gradient(${color} 2.4px, transparent 2.6px);background-size:28px 28px;`
+    : `background-image:repeating-linear-gradient(135deg, ${color} 0px, ${color} 7px, transparent 7px, transparent 32px);`;
+}
+function footer(){
+  return `<div class="ftr"><span class="hdl">${esc(S.handle)}</span><span class="wm">MATCHDAY</span></div>`;
+}
+function grain(){return S.grain?`<div class="grain"></div>`:"";}
+/* Flags: fetch once → embed as data URL (guaranteed display + reliable export).
+   While loading (or if fetch is blocked) a plain hotlinked img shows instead;
+   only if that also errors does the flag hide, leaving the themed cover intact. */
+const FLAG_CACHE={};
+function flagImg(t){
+  if(!t.f)return"";
+  const c=FLAG_CACHE[t.f];
+  if(typeof c==="string"&&c.indexOf("data:")===0)return `<img class="cv-flag" src="${c}" alt="">`;
+  if(c===undefined)fetchFlag(t.f);
+  return `<img class="cv-flag" src="https://flagcdn.com/w320/${t.f}.png" alt="" onerror="this.style.display='none'">`;
+}
+async function fetchFlag(code){
+  FLAG_CACHE[code]="pending";
+  try{
+    const r=await fetch(`https://flagcdn.com/w320/${code}.png`,{mode:"cors"});
+    if(!r.ok)throw new Error();
+    const b=await r.blob();
+    const d=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b);});
+    FLAG_CACHE[code]=d;
+    drawOutput(); // re-render with the embedded flag
+  }catch(e){FLAG_CACHE[code]=null;} // keep the hotlink fallback
+}
+function fmtDate(d){
+  if(!d)return "";
+  const dt=new Date(d+"T12:00:00");
+  if(isNaN(dt))return esc(d);
+  return dt.toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}).toUpperCase();
+}
+function dualBg(A,B){ // shared body-slide background: A dominates top, B bottom
+  return `<div class="layer" style="background:linear-gradient(180deg, ${A.deep} 0%, #0c0c12 52%, ${B.deep} 100%);"></div>
+    <div class="layer" style="background:linear-gradient(90deg, ${alpha(A.primary,.22)} 0%, transparent 40%, transparent 60%, ${alpha(B.primary,.22)} 100%);"></div>
+    <div class="pat" style="${patStyle(mix(A.secondary,B.secondary,0.5))}"></div>`;
+}
+function slHead(title,A,B){
+  return `<div class="sl-head"><span class="kick">${title}</span>
+    <div class="subline">${esc(team(S.teamA).n)} <span style="opacity:.5">vs</span> ${esc(team(S.teamB).n)} · ${esc(S.comp)}</div>
+    <div class="sl-rule" style="background:linear-gradient(90deg, ${A.primary}, ${B.primary});"></div></div>`;
+}
+
+function buildCover(A,B){
+  const tA=team(S.teamA),tB=team(S.teamB);
+  const fs=n=>n.length>16?56:n.length>12?74:96; // long names step down so name+flag always fit
+  return `<div class="art">
+    <div class="layer" style="background:${A.gradient};"></div>
+    <div class="layer" style="background:${B.gradient};clip-path:polygon(0 100%,100% 100%,100% 34%,0 66%);"></div>
+    <div class="layer" style="background:linear-gradient(90deg, ${A.primary}, ${mix(A.primary,B.primary,0.5)}, ${B.primary});clip-path:polygon(0 65%,100% 33%,100% 36.5%,0 68.5%);"></div>
+    <div class="pat" style="${patStyle(A.secondary)};clip-path:polygon(0 0,100% 0,100% 34%,0 66%);"></div>
+    <div class="pat" style="${patStyle(B.secondary)};clip-path:polygon(0 100%,100% 100%,100% 34%,0 66%);"></div>
+    ${grain()}
+    <div class="cv-ftbadge">FT</div>
+    <div class="cv-comp">${esc(S.comp)}</div>
+    <div class="cv-teamA" style="color:${A.ink};font-size:calc(var(--u)*${fs(tA.n)});text-shadow:0 3px 14px ${alpha('#000000',0.25)};">${flagImg(tA)}<span>${esc(tA.n)}</span></div>
+    <div class="cv-plate" style="border-left:14px solid ${A.primary};border-right:14px solid ${B.primary};">
+      <span class="cv-score">${esc(S.scoreA)}</span><span class="cv-dash">–</span><span class="cv-score">${esc(S.scoreB)}</span>
+    </div>
+    <div class="cv-teamB" style="color:${B.ink};font-size:calc(var(--u)*${fs(tB.n)});text-shadow:0 3px 14px ${alpha('#000000',0.25)};"><span>${esc(tB.n)}</span>${flagImg(tB)}</div>
+    <div class="cv-meta"><span>${esc(S.venue)||"VENUE TBC"} · ${fmtDate(S.date)||"DATE"}</span></div>
+    ${footer()}
+  </div>`;
+}
+
+function buildMoments(A,B){
+  const evs=S.moments.filter(m=>m.who||m.min).slice(0,10);
+  const list=evs.length?evs.map(m=>{
+    const T=m.team==="B"?B:A, ty=TYPES[m.type]||TYPES.goal;
+    return `<div class="ev">
+      <div class="min" style="background:${T.primary};color:${T.ink};">${esc(m.min)}'</div>
+      <div class="ico">${ty.ico}</div>
+      <div><div class="who">${esc(m.who)||"—"}${ty.tag?`<span class="typetag">${ty.tag}</span>`:""}</div>
+      ${m.what?`<div class="what">${esc(m.what)}</div>`:""}</div>
+    </div>`;
+  }).join(""):`<div class="tl-empty">ADD MOMENTS IN THE EDITOR</div>`;
+  return `<div class="art">${dualBg(A,B)}${grain()}
+    ${slHead("KEY MOMENTS",A,B)}
+    <div class="tl${evs.length>6?" compact":""}">${list}</div>
+    ${footer()}
+  </div>`;
+}
+
+function buildStats(A,B){
+  const ks=Object.keys(S.stats);
+  const poss=S.stats.Possession||[50,50];
+  const pTot=(poss[0]+poss[1])||1;
+  const rows=ks.filter(k=>k!=="Possession").map(k=>{
+    const [a,b]=S.stats[k], mx=Math.max(a,b,0.001);
+    return `<div>
+      <div class="st-lbl">${esc(k)}</div>
+      <div class="st-row">
+        <span class="st-num r">${a}</span>
+        <div class="st-bars">
+          <div class="st-half l"><div class="st-fill" style="width:${(a/mx*100).toFixed(1)}%;background:${A.primary};"></div></div>
+          <div class="st-half"><div class="st-fill" style="width:${(b/mx*100).toFixed(1)}%;background:${B.primary};"></div></div>
+        </div>
+        <span class="st-num">${b}</span>
+      </div>
+    </div>`;
+  }).join("");
+  return `<div class="art">${dualBg(A,B)}${grain()}
+    ${slHead("MATCH STATS",A,B)}
+    <div class="stats">
+      <div>
+        <div class="st-lbl">Possession</div>
+        <div class="poss">
+          <div class="pb" style="width:${(poss[0]/pTot*100).toFixed(1)}%;background:${A.primary};color:${A.ink};">${poss[0]}%</div>
+          <div style="width:${(poss[1]/pTot*100).toFixed(1)}%;background:${B.primary};color:${B.ink};">${poss[1]}%</div>
+        </div>
+      </div>
+      ${rows}
+    </div>
+    ${footer()}
+  </div>`;
+}
+
+function buildMotm(A,B){
+  const T=S.motm.team==="B"?B:A, other=S.motm.team==="B"?A:B;
+  const tn=S.motm.team==="B"?team(S.teamB).n:team(S.teamA).n;
+  const photo=S.motm.img
+    ? `<img class="motm-photo" src="${S.motm.img}" alt="">`
+    : `<div class="motm-photo ph" style="color:${alpha(T.ink,.5)};">👤</div>`;
+  const chips=S.motm.chips.map(c=>`<div class="motm-chip" style="color:${T.ink};"><div class="cl">${esc(c[0])}</div><div class="cvv" style="color:${T.ink==='#ffffff'?T.secondary:T.ink};">${esc(c[1])}</div></div>`).join("");
+  return `<div class="art">
+    <div class="layer" style="background:linear-gradient(170deg, ${T.deep} 0%, ${mix(T.primary,'#0a0a10',0.42)} 60%, ${mix(other.primary,'#0a0a10',0.7)} 100%);"></div>
+    <div class="pat" style="${patStyle(T.secondary)}"></div>
+    ${grain()}
+    ${slHead("PLAYER OF THE MATCH",A,B)}
+    <div class="motm-card" style="background:${T.gradient};border:6px solid ${alpha(T.secondary,.85)};box-shadow:0 30px 80px rgba(0,0,0,.5);color:${T.ink};">
+      <div class="motm-top">
+        <div><div class="motm-rate">${esc(S.motm.rate)}</div><div class="motm-pos">${esc(S.motm.pos)}</div></div>
+        <div class="motm-pos" style="margin-top:8px;">${esc(tn)}</div>
+      </div>
+      ${photo}
+      <div class="motm-name">${esc(S.motm.name)||"PLAYER NAME"}</div>
+      <div class="motm-chips">${chips}</div>
+    </div>
+    ${footer()}
+  </div>`;
+}
+
+const BUILDERS={cover:buildCover,moments:buildMoments,stats:buildStats,motm:buildMotm};
+
+/* ---------- preview render: one base scale factor per slide ---------- */
+function fitScale(){
+  document.querySelectorAll(".slide-outer").forEach(o=>{
+    const art=o.querySelector(".art");
+    if(art)art.style.transform=`scale(${o.clientWidth/1080})`;
+  });
+}
+window.addEventListener("resize",fitScale);
+
+function drawOutput(){
+  const A=teamTheme(team(S.teamA)), B=teamTheme(team(S.teamB));
+  // the editor chrome follows the match: team colors + live scoreboard in the app bar
+  const rs=document.documentElement.style;
+  rs.setProperty("--ta",A.primary);rs.setProperty("--tb",B.primary);
+  $("tagsbox").innerHTML=
+    `<span class="sb-team a">${esc(team(S.teamA).n)}</span>`+
+    `<span class="sb-score">${esc(S.scoreA)}<i>–</i>${esc(S.scoreB)}</span>`+
+    `<span class="sb-team b">${esc(team(S.teamB).n)}</span>`;
+  const track=$("track");track.innerHTML="";
+  S.order.filter(k=>S.enabled[k]).forEach(k=>{
+    const outer=document.createElement("div");
+    outer.className="slide-outer";
+    outer.innerHTML=BUILDERS[k](A,B);
+    track.appendChild(outer);
+  });
+  fitScale();
+}
+drawOutput();
+
+/* ---------- caption copy ---------- */
+$("copyCap").onclick=()=>navigator.clipboard.writeText($("cap").value);
+
+/* ---------- import overnight match JSON (written by fetch-match.mjs) ---------- */
+const NAME_MAP={"turkey":"Türkiye","korea republic":"South Korea","united states":"USA","united states of america":"USA","czech republic":"Czechia","cote d'ivoire":"Ivory Coast","côte d'ivoire":"Ivory Coast","cape verde islands":"Cape Verde","cabo verde":"Cape Verde","curacao":"Curaçao","republic of ireland":"Ireland","bosnia and herzegovina":"Bosnia & Herzegovina","bosnia-herzegovina":"Bosnia & Herzegovina","congo dr":"DR Congo","democratic republic of the congo":"DR Congo","congo-kinshasa":"DR Congo"};
+function resolveTeam(name){
+  if(!name)return null;
+  const low=String(name).trim().toLowerCase();
+  const hit=TEAMS.find(t=>t.n.toLowerCase()===low);
+  return hit?hit.n:(NAME_MAP[low]||null);
+}
+function applyMatchJSON(d){
+  const warn=[];
+  const a=resolveTeam(d.teamA),b=resolveTeam(d.teamB);
+  if(a)S.teamA=a;else if(d.teamA)warn.push(`"${d.teamA}" isn't in the theme list — kept ${S.teamA}`);
+  if(b)S.teamB=b;else if(d.teamB)warn.push(`"${d.teamB}" isn't in the theme list — kept ${S.teamB}`);
+  if(d.scoreA!=null)S.scoreA=d.scoreA;
+  if(d.scoreB!=null)S.scoreB=d.scoreB;
+  if(d.venue!=null)S.venue=d.venue;
+  if(d.date)S.date=d.date;
+  if(d.comp)S.comp=d.comp;
+  if(Array.isArray(d.moments))S.moments=d.moments.slice(0,10).map(m=>({min:String(m.min??""),team:m.team==="B"?"B":"A",type:TYPES[m.type]?m.type:"goal",who:m.who||"",what:m.what||""}));
+  if(d.stats)Object.keys(S.stats).forEach(k=>{if(Array.isArray(d.stats[k]))S.stats[k]=[parseFloat(d.stats[k][0])||0,parseFloat(d.stats[k][1])||0];});
+  if(d.motm){
+    const p=d.motm;
+    if(p.name)S.motm.name=p.name;
+    if(p.pos)S.motm.pos=p.pos;
+    if(p.rate)S.motm.rate=String(p.rate);
+    S.motm.team=p.team==="B"?"B":"A";
+    if(Array.isArray(p.chips))p.chips.slice(0,3).forEach((c,i)=>{S.motm.chips[i]=[String(c[0]??""),String(c[1]??"")];});
+  }
+  // sync every editor field to the imported state
+  fillTeamSelect($("teamA"),S.teamA);fillTeamSelect($("teamB"),S.teamB);
+  $("scoreA").value=S.scoreA;$("scoreB").value=S.scoreB;$("venue").value=S.venue;
+  $("mdate").value=S.date||"";$("comp").value=S.comp;
+  $("pmName").value=S.motm.name;$("pmPos").value=S.motm.pos;$("pmRate").value=S.motm.rate;$("pmTeam").value=S.motm.team;
+  [["c1l",0,0],["c1v",0,1],["c2l",1,0],["c2v",1,1],["c3l",2,0],["c3v",2,1]].forEach(([id,i,j])=>{$(id).value=S.motm.chips[i][j];});
+  renderMoments();renderStats();drawOutput();
+  const err=$("err");
+  if(warn.length){err.textContent="Imported with warnings: "+warn.join(" · ");err.classList.remove("hidden");}
+  else err.classList.add("hidden");
+}
+$("importJson").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{applyMatchJSON(JSON.parse(r.result));}
+    catch(ex){const err=$("err");err.textContent="Couldn't read that JSON: "+ex.message;err.classList.remove("hidden");}
+    e.target.value="";
+  };
+  r.readAsText(f);
+});
+
+/* ---------- one-tap "Load latest match" from your GitHub repo ---------- */
+const repoInput=$("repoUrl");
+try{const saved=localStorage.getItem("cs_repo");if(saved)repoInput.value=saved;}catch(e){}
+repoInput.addEventListener("input",()=>{try{localStorage.setItem("cs_repo",repoInput.value.trim());}catch(e){}});
+function latestUrl(raw){
+  let u=String(raw||"").trim().replace(/\/+$/,"");
+  if(!u)return null;
+  // convert a normal github.com page link into its raw.githubusercontent.com form
+  const m=u.match(/^https?:\/\/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?(?:\/(?:tree|blob)\/([^\/]+)(\/.*)?)?$/);
+  if(m)u=`https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]||"main"}${m[4]||""}`;
+  // a bare repo URL points at the auto-written latest.json; a direct .json link is used as-is
+  if(!/\.json($|\?)/.test(u))u+="/matches/latest.json";
+  return u+(u.includes("?")?"&":"?")+"t="+Date.now(); // bust the raw CDN cache
+}
+$("loadLatest").onclick=async()=>{
+  const err=$("err");err.classList.add("hidden");
+  const btn=$("loadLatest");
+  const url=latestUrl(repoInput.value);
+  if(!url){err.textContent="Paste your repo URL first (e.g. https://github.com/you/matchday).";err.classList.remove("hidden");return;}
+  btn.disabled=true;const old=btn.textContent;btn.textContent="Loading…";
+  try{
+    const res=await fetch(url,{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status+(res.status===404?" — no matches/latest.json yet, or the repo is private":""));
+    applyMatchJSON(await res.json());
+    btn.textContent="✓ Loaded";setTimeout(()=>{btn.textContent=old;},1500);
+  }catch(ex){
+    err.textContent="Couldn't load latest match: "+ex.message;err.classList.remove("hidden");
+    btn.textContent=old;
+  }finally{btn.disabled=false;}
+};
+
+/* ---------- export: each slide → exact 1080×1350 PNG, numbered ---------- */
+$("export").onclick=async()=>{
+  const err=$("err");err.classList.add("hidden");
+  const arts=document.querySelectorAll(".track .art");
+  const btn=$("export");btn.disabled=true;
+  for(let i=0;i<arts.length;i++){
+    btn.textContent=`Rendering ${i+1}/${arts.length}…`;
+    try{
+      const url=await htmlToImage.toPng(arts[i],{
+        width:1080,height:1350,pixelRatio:1,
+        style:{transform:"scale(1)"}   // undo preview scaling on the export clone
+      });
+      const a=document.createElement("a");
+      a.download=String(i+1).padStart(2,"0")+".png";
+      a.href=url;a.click();
+      await new Promise(r=>setTimeout(r,350));
+    }catch(e){
+      err.textContent="Export needs internet (for the image library + fonts). You can still screenshot the slides.";
+      err.classList.remove("hidden");break;
+    }
+  }
+  btn.disabled=false;btn.textContent="⬇ Export PNGs · 1080×1350";
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+name: Matchday pipeline
+
+on:
+  schedule:
+    - cron: "15 * * * *"   # every hour at :15 UTC (GitHub cron is UTC, best-effort timing)
+  workflow_dispatch:        # manual "Run workflow" button for testing
+
+permissions:
+  contents: write
+
+concurrency:
+  group: matchday
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 1. Fetch finished matches
+        run: node fetch-match.mjs
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+
+      - name: 2. Install renderer (Puppeteer)
+        run: npm install
+
+      - name: 3. Render slides to PNG
+        run: node render-slides.mjs
+
+      - name: 4. Commit match data + rendered slides
+        run: |
+          git config user.name "matchday-bot"
+          git config user.email "matchday-bot@users.noreply.github.com"
+          git add matches/ posts/
+          git diff --staged --quiet || (git commit -m "match data + slides $(date -u +'%Y-%m-%d %H:%M UTC')" && git push)
+
+      - name: 5. Auto-post to Instagram (skipped when autoPost is false)
+        run: node post-instagram.mjs
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+
+      - name: 6. Commit posted markers
+        run: |
+          git config user.name "matchday-bot"
+          git config user.email "matchday-bot@users.noreply.github.com"
+          git add posts/
+          git diff --staged --quiet || (git commit -m "posted markers $(date -u +'%Y-%m-%d %H:%M UTC')" && git push)

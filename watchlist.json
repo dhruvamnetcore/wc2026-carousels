@@ -1,0 +1,15 @@
+{
+  "timezone": "Asia/Kolkata",
+
+  "autoLeagues": ["World Cup"],
+
+  "autoPost": false,
+
+  "slides": ["cover", "moments", "stats", "motm"],
+  "hashtags": ["#WorldCup2026", "#Matchday", "#Football"],
+  "captionTemplate": "FT: {teamA} {scoreA}-{scoreB} {teamB}\n{comp}\n{venue}\n\n{hashtags}",
+
+  "matches": [
+    { "date": "2026-06-14", "teamA": "Argentina", "teamB": "Mexico" }
+  ]
+}
