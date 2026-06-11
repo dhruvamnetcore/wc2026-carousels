@@ -655,8 +655,16 @@ function buildMoments(A,B){
 
 function buildStats(A,B){
   const ks=Object.keys(S.stats);
+  const hasPoss=Array.isArray(S.stats.Possession);
   const poss=S.stats.Possession||[50,50];
   const pTot=(poss[0]+poss[1])||1;
+  const possBlock=hasPoss?`<div>
+        <div class="st-lbl">Possession</div>
+        <div class="poss">
+          <div class="pb" style="width:${(poss[0]/pTot*100).toFixed(1)}%;background:${A.primary};color:${A.ink};">${poss[0]}%</div>
+          <div style="width:${(poss[1]/pTot*100).toFixed(1)}%;background:${B.primary};color:${B.ink};">${poss[1]}%</div>
+        </div>
+      </div>`:"";
   const rows=ks.filter(k=>k!=="Possession").map(k=>{
     const [a,b]=S.stats[k], mx=Math.max(a,b,0.001);
     return `<div>
@@ -674,13 +682,7 @@ function buildStats(A,B){
   return `<div class="art">${dualBg(A,B)}${grain()}
     ${slHead("MATCH STATS",A,B)}
     <div class="stats">
-      <div>
-        <div class="st-lbl">Possession</div>
-        <div class="poss">
-          <div class="pb" style="width:${(poss[0]/pTot*100).toFixed(1)}%;background:${A.primary};color:${A.ink};">${poss[0]}%</div>
-          <div style="width:${(poss[1]/pTot*100).toFixed(1)}%;background:${B.primary};color:${B.ink};">${poss[1]}%</div>
-        </div>
-      </div>
+      ${possBlock}
       ${rows}
     </div>
     ${footer()}
@@ -693,7 +695,7 @@ function buildMotm(A,B){
   const photo=S.motm.img
     ? `<img class="motm-photo" src="${S.motm.img}" alt="">`
     : `<div class="motm-photo ph" style="color:${alpha(T.ink,.5)};">👤</div>`;
-  const chips=S.motm.chips.map(c=>`<div class="motm-chip" style="color:${T.ink};"><div class="cl">${esc(c[0])}</div><div class="cvv" style="color:${T.ink==='#ffffff'?T.secondary:T.ink};">${esc(c[1])}</div></div>`).join("");
+  const chips=S.motm.chips.filter(c=>String(c[0]).trim()||String(c[1]).trim()).map(c=>`<div class="motm-chip" style="color:${T.ink};"><div class="cl">${esc(c[0])}</div><div class="cvv" style="color:${T.ink==='#ffffff'?T.secondary:T.ink};">${esc(c[1])}</div></div>`).join("");
   return `<div class="art">
     <div class="layer" style="background:linear-gradient(170deg, ${T.deep} 0%, ${mix(T.primary,'#0a0a10',0.42)} 60%, ${mix(other.primary,'#0a0a10',0.7)} 100%);"></div>
     <div class="pat" style="${patStyle(T.secondary)}"></div>
@@ -701,7 +703,7 @@ function buildMotm(A,B){
     ${slHead("PLAYER OF THE MATCH",A,B)}
     <div class="motm-card" style="background:${T.gradient};border:6px solid ${alpha(T.secondary,.85)};box-shadow:0 30px 80px rgba(0,0,0,.5);color:${T.ink};">
       <div class="motm-top">
-        <div><div class="motm-rate">${esc(S.motm.rate)}</div><div class="motm-pos">${esc(S.motm.pos)}</div></div>
+        <div>${S.motm.rate?`<div class="motm-rate">${esc(S.motm.rate)}</div>`:""}${S.motm.pos?`<div class="motm-pos">${esc(S.motm.pos)}</div>`:""}</div>
         <div class="motm-pos" style="margin-top:8px;">${esc(tn)}</div>
       </div>
       ${photo}
@@ -765,14 +767,24 @@ function applyMatchJSON(d){
   if(d.date)S.date=d.date;
   if(d.comp)S.comp=d.comp;
   if(Array.isArray(d.moments))S.moments=d.moments.slice(0,10).map(m=>({min:String(m.min??""),team:m.team==="B"?"B":"A",type:TYPES[m.type]?m.type:"goal",who:m.who||"",what:m.what||""}));
-  if(d.stats)Object.keys(S.stats).forEach(k=>{if(Array.isArray(d.stats[k]))S.stats[k]=[parseFloat(d.stats[k][0])||0,parseFloat(d.stats[k][1])||0];});
+  // rebuild stats from ONLY the keys the file provides, so a source without
+  // (say) xG/possession/corners doesn't fall back to the demo defaults
+  if(d.stats&&typeof d.stats==="object"){
+    const ORD=["Possession","Shots","On target","xG","Corners"];
+    const keys=[...ORD.filter(k=>Array.isArray(d.stats[k])),...Object.keys(d.stats).filter(k=>!ORD.includes(k)&&Array.isArray(d.stats[k]))];
+    if(keys.length){const ns={};keys.forEach(k=>{ns[k]=[parseFloat(d.stats[k][0])||0,parseFloat(d.stats[k][1])||0];});S.stats=ns;}
+  }
   if(d.motm){
     const p=d.motm;
-    if(p.name)S.motm.name=p.name;
-    if(p.pos)S.motm.pos=p.pos;
-    if(p.rate)S.motm.rate=String(p.rate);
+    if(p.name!=null)S.motm.name=String(p.name);
+    if(p.pos!=null)S.motm.pos=String(p.pos);     // "" clears the demo position
+    if(p.rate!=null)S.motm.rate=String(p.rate);  // "" clears the demo rating
     S.motm.team=p.team==="B"?"B":"A";
-    if(Array.isArray(p.chips))p.chips.slice(0,3).forEach((c,i)=>{S.motm.chips[i]=[String(c[0]??""),String(c[1]??"")];});
+    if(Array.isArray(p.chips)){
+      const arr=p.chips.slice(0,3).map(c=>[String(c[0]??""),String(c[1]??"")]);
+      while(arr.length<3)arr.push(["",""]);       // keep 3 for the editor fields
+      S.motm.chips=arr;
+    }
   }
   // sync every editor field to the imported state
   fillTeamSelect($("teamA"),S.teamA);fillTeamSelect($("teamB"),S.teamB);

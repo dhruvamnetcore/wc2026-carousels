@@ -1,6 +1,8 @@
 {
   "timezone": "Asia/Kolkata",
 
+  "source": "thesportsdb",
+
   "autoLeagues": ["World Cup"],
 
   "autoPost": false,

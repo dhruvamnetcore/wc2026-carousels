@@ -33,6 +33,9 @@ await page.goto("file://" + path.resolve("CarouselStudio.html"), { waitUntil: "n
 for (const f of todo) {
   const slug = f.replace(/\.json$/, "");
   const data = JSON.parse(readFileSync(path.join("matches", f), "utf8"));
+  // a match file may declare its own slide list (e.g. the free source drops the
+  // MOTM slide on a 0-0); otherwise fall back to the global watchlist setting
+  const slidesForMatch = Array.isArray(data.slides) && data.slides.length ? data.slides : SLIDES;
   const outDir = path.join("posts", slug);
   mkdirSync(outDir, { recursive: true });
 
@@ -57,7 +60,7 @@ for (const f of todo) {
     slides.forEach(k => { S.enabled[k] = true; });
     applyMatchJSON(d);
     if (img) { S.motm.img = img; drawOutput(); }
-  }, data, SLIDES, photo);
+  }, data, slidesForMatch, photo);
 
   /* wait for display fonts and embedded flags */
   await page.evaluate(() => document.fonts.ready);
