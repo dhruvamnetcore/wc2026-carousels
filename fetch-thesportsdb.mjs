@@ -112,21 +112,50 @@ function buildStats(eventstats) {
   return out;
 }
 
-/* top scorer from the timeline -> studio "motm" (no rating on this source) */
-function buildMotm(moments) {
-  const goals = (moments || []).filter(m => m.type === "goal" || m.type === "pen");
+/* TheSportsDB free-text position -> short studio label */
+const POS = s => {
+  const x = norm(s);
+  if (!x) return "";
+  if (x.includes("keeper")) return "GK";
+  if (x.includes("back") || x.includes("defen")) return "DEF";
+  if (x.includes("midfield")) return "MID";
+  if (x.includes("forward") || x.includes("strik") || x.includes("wing")) return "FWD";
+  return s.toUpperCase();
+};
+
+/* top scorer from the timeline -> studio "motm". No match rating exists on this
+   source, but we enrich (by exact player id) with position, an assists chip, and
+   the player's cutout photo. (Photo is opt-in — licensing is uncertain; a local
+   photos/<name>.png you have rights to still overrides it in render-slides.mjs.) */
+async function buildMotm(timeline) {
+  const goals = (timeline || []).filter(t =>
+    norm(t.strTimeline) === "goal" && !norm(t.strTimelineDetail).includes("own"));
   if (!goals.length) return null;
+
   const tally = {};
   for (const g of goals) {
-    if (!g.who) continue;
-    (tally[g.who] = tally[g.who] || { who: g.who, team: g.team, n: 0 }).n++;
+    const key = g.idPlayer || g.strPlayer;
+    if (!key) continue;
+    const side = norm(g.strHome) === "yes" ? "A" : "B";
+    (tally[key] = tally[key] || { idPlayer: g.idPlayer, who: g.strPlayer || "", team: side, goals: 0 }).goals++;
   }
-  const top = Object.values(tally).sort((a, b) => b.n - a.n)[0];
-  if (!top) return null;
-  return {
-    name: top.who, pos: "", rate: "", team: top.team,
-    chips: [["GOALS", String(top.n)]],
-  };
+  const top = Object.values(tally).sort((a, b) => b.goals - a.goals)[0];
+  if (!top || !top.who) return null;
+
+  let assists = 0;
+  for (const g of goals) if (g.strAssist && norm(g.strAssist) === norm(top.who)) assists++;
+
+  let pos = "", img = null;
+  if (top.idPlayer) {
+    try {
+      const p = (await tsdb(`lookupplayer.php?id=${top.idPlayer}`)).players?.[0];
+      if (p) { pos = POS(p.strPosition); img = p.strCutout || p.strThumb || null; }
+    } catch { /* enrichment is best-effort; fall back to bare card */ }
+  }
+
+  const chips = [["GOALS", String(top.goals)]];
+  if (assists) chips.push(["ASSISTS", String(assists)]);
+  return { name: top.who, pos, rate: "", team: top.team, chips, ...(img ? { img } : {}) };
 }
 
 async function processEvent(e) {
@@ -143,7 +172,7 @@ async function processEvent(e) {
 
   const moments = buildMoments(tl);
   const stats = buildStats(st);
-  const motm = buildMotm(moments);
+  const motm = await buildMotm(tl);
 
   // per-match slide list so empty cards are never rendered
   const slides = ["cover", "moments"];

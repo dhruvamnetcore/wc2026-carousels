@@ -39,7 +39,9 @@ for (const f of todo) {
   const outDir = path.join("posts", slug);
   mkdirSync(outDir, { recursive: true });
 
-  /* optional MOTM photo from the photos/ library */
+  /* MOTM photo: a local photos/<name>.png you have rights to wins; otherwise
+     fall back to the cutout URL the fetcher embedded (data.motm.img), pulled
+     and inlined here so the screenshot never races an async image load. */
   let photo = null;
   if (data.motm?.name) {
     const ps = pslug(data.motm.name);
@@ -50,6 +52,16 @@ for (const f of todo) {
         console.log(`  using player photo photos/${ps}.${ext}`);
         break;
       }
+    }
+    if (!photo && typeof data.motm.img === "string" && /^https?:\/\//.test(data.motm.img)) {
+      try {
+        const r = await fetch(data.motm.img);
+        if (r.ok) {
+          const ct = r.headers.get("content-type") || "image/png";
+          photo = `data:${ct};base64,` + Buffer.from(await r.arrayBuffer()).toString("base64");
+          console.log(`  using remote player photo ${data.motm.img}`);
+        }
+      } catch (e) { console.log(`  ! couldn't fetch player photo: ${e.message}`); }
     }
   }
 

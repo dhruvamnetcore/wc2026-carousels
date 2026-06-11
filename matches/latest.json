@@ -40,7 +40,7 @@
   },
   "motm": {
     "name": "Julián Quiñones",
-    "pos": "",
+    "pos": "FWD",
     "rate": "",
     "team": "A",
     "chips": [
@@ -48,7 +48,8 @@
         "GOALS",
         "1"
       ]
-    ]
+    ],
+    "img": "https://r2.thesportsdb.com/images/media/player/cutout/ol1x961719501112.png"
   },
   "_source": "thesportsdb"
 }
