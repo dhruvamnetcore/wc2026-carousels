@@ -212,6 +212,27 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .tl.compact .ev .typetag{font-size:calc(var(--u)*17);}
 .tl.compact::before{left:calc(var(--u)*66);}
 
+/* Vertical centre-line timeline (Key Moments, shared-broadcast style) */
+.tlv{position:absolute;top:calc(var(--u)*300);bottom:calc(var(--u)*120);left:calc(var(--u)*44);right:calc(var(--u)*44);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*30);z-index:5;}
+.tlv::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:calc(var(--u)*5);transform:translateX(-50%);background:rgba(255,255,255,.16);border-radius:calc(var(--u)*3);}
+.tlv-row{position:relative;display:flex;align-items:center;width:100%;min-height:calc(var(--u)*70);}
+.tlv-half{width:50%;display:flex;align-items:center;gap:calc(var(--u)*18);}
+.tlv-half.l{justify-content:flex-end;text-align:right;padding-right:calc(var(--u)*42);}
+.tlv-half.r{justify-content:flex-start;text-align:left;padding-left:calc(var(--u)*42);}
+.tlv-node{position:absolute;left:50%;top:50%;width:calc(var(--u)*22);height:calc(var(--u)*22);transform:translate(-50%,-50%) rotate(45deg);border-radius:calc(var(--u)*4);z-index:2;box-shadow:0 0 0 calc(var(--u)*7) rgba(12,12,18,.9);}
+.tlv-min{font-family:'Anton',sans-serif;font-size:calc(var(--u)*40);color:#fff;line-height:1;flex:0 0 auto;}
+.tlv-ico{font-size:calc(var(--u)*44);line-height:1;flex:0 0 auto;}
+.tlv-txt .who{font-size:calc(var(--u)*36);font-weight:800;color:#fff;text-transform:uppercase;line-height:1.08;letter-spacing:calc(var(--u)*.5);}
+.tlv-txt .what{font-size:calc(var(--u)*24);color:rgba(255,255,255,.7);line-height:1.2;margin-top:calc(var(--u)*4);}
+.tlv-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*17);letter-spacing:calc(var(--u)*1.5);padding:calc(var(--u)*2) calc(var(--u)*9);border-radius:calc(var(--u)*4);background:rgba(255,255,255,.16);color:#fff;margin:0 calc(var(--u)*8);vertical-align:middle;}
+.tlv.compact{gap:calc(var(--u)*16);}
+.tlv.compact .tlv-row{min-height:calc(var(--u)*58);}
+.tlv.compact .tlv-min{font-size:calc(var(--u)*30);}
+.tlv.compact .tlv-ico{font-size:calc(var(--u)*34);}
+.tlv.compact .tlv-txt .who{font-size:calc(var(--u)*28);}
+.tlv.compact .tlv-txt .what{font-size:calc(var(--u)*20);}
+.tlv-empty{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);color:rgba(255,255,255,.5);text-align:center;}
+
 /* Stats */
 .stats{position:absolute;top:calc(var(--u)*290);left:calc(var(--u)*64);right:calc(var(--u)*64);bottom:calc(var(--u)*120);display:flex;flex-direction:column;justify-content:center;gap:calc(var(--u)*52);z-index:5;}
 .st-lbl{text-align:center;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*24);letter-spacing:calc(var(--u)*4);color:rgba(255,255,255,.7);text-transform:uppercase;margin-bottom:calc(var(--u)*14);}
@@ -234,6 +255,7 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .motm-photo{width:calc(var(--u)*360);height:calc(var(--u)*360);border-radius:50%;object-fit:cover;border:calc(var(--u)*8) solid rgba(255,255,255,.85);margin-top:calc(var(--u)*-30);background:rgba(0,0,0,.25);}
 .motm-photo.ph{display:flex;align-items:center;justify-content:center;font-size:calc(var(--u)*120);}
 .motm-name{font-family:'Anton',sans-serif;font-size:calc(var(--u)*64);text-transform:uppercase;text-align:center;line-height:1.05;margin-top:calc(var(--u)*34);letter-spacing:calc(var(--u)*1);}
+.motm-club{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*24);text-align:center;opacity:.82;margin-top:calc(var(--u)*14);letter-spacing:calc(var(--u)*1);line-height:1.3;}
 .motm-chips{display:flex;gap:calc(var(--u)*18);margin-top:auto;width:100%;}
 .motm-chip{flex:1;background:rgba(8,8,14,.42);border-radius:calc(var(--u)*16);padding:calc(var(--u)*16) calc(var(--u)*8);text-align:center;}
 .motm-chip .cl{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*19);letter-spacing:calc(var(--u)*1.5);text-transform:uppercase;opacity:.8;}
@@ -447,7 +469,7 @@ const S={
   enabled:{cover:true,moments:true,stats:true,motm:true},
   moments:[{min:"23",team:"A",type:"goal",who:"",what:""}],
   stats:{Possession:[55,45],Shots:[14,9],"On target":[6,3],xG:[1.8,0.9],Corners:[7,4]},
-  motm:{name:"",pos:"CAM",rate:"9.2",team:"A",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null},
+  motm:{name:"",pos:"CAM",rate:"9.2",team:"A",club:"",league:"",number:"",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null},
 };
 const team=n=>TEAMS.find(t=>t.n===n)||TEAMS[0];
 
@@ -637,18 +659,22 @@ function buildCover(A,B){
 
 function buildMoments(A,B){
   const evs=S.moments.filter(m=>m.who||m.min).slice(0,10);
-  const list=evs.length?evs.map(m=>{
-    const T=m.team==="B"?B:A, ty=TYPES[m.type]||TYPES.goal;
-    return `<div class="ev">
-      <div class="min" style="background:${T.primary};color:${T.ink};">${esc(m.min)}'</div>
-      <div class="ico">${ty.ico}</div>
-      <div><div class="who">${esc(m.who)||"—"}${ty.tag?`<span class="typetag">${ty.tag}</span>`:""}</div>
-      ${m.what?`<div class="what">${esc(m.what)}</div>`:""}</div>
-    </div>`;
-  }).join(""):`<div class="tl-empty">ADD MOMENTS IN THE EDITOR</div>`;
+  const compact=evs.length>5;
+  const rows=evs.length?evs.map(m=>{
+    const isA=m.team!=="B";
+    const T=isA?A:B, ty=TYPES[m.type]||TYPES.goal;
+    const node=`<div class="tlv-node" style="background:${T.primary};"></div>`;
+    const txt=`<div class="tlv-txt"><div class="who">${esc(m.who)||"—"}${ty.tag?`<span class="tlv-tag">${ty.tag}</span>`:""}</div>${m.what?`<div class="what">${esc(m.what)}</div>`:""}</div>`;
+    const ico=`<div class="tlv-ico">${ty.ico}</div>`;
+    const min=`<div class="tlv-min">${esc(m.min)}'</div>`;
+    const body=isA
+      ? `<div class="tlv-half l">${txt}${ico}${min}</div><div class="tlv-half r"></div>`
+      : `<div class="tlv-half l"></div><div class="tlv-half r">${min}${ico}${txt}</div>`;
+    return `<div class="tlv-row">${node}${body}</div>`;
+  }).join(""):`<div class="tlv-empty">ADD MOMENTS IN THE EDITOR</div>`;
   return `<div class="art">${dualBg(A,B)}${grain()}
     ${slHead("KEY MOMENTS",A,B)}
-    <div class="tl${evs.length>6?" compact":""}">${list}</div>
+    <div class="tlv${compact?" compact":""}">${rows}</div>
     ${footer()}
   </div>`;
 }
@@ -710,11 +736,12 @@ function buildMotm(A,B){
     ${slHead("PLAYER OF THE MATCH",A,B)}
     <div class="motm-card" style="background:${T.gradient};border:6px solid ${alpha(T.secondary,.85)};box-shadow:0 30px 80px rgba(0,0,0,.5);color:${T.ink};">
       <div class="motm-top">
-        <div>${S.motm.rate?`<div class="motm-rate">${esc(S.motm.rate)}</div>`:""}${S.motm.pos?`<div class="motm-pos">${esc(S.motm.pos)}</div>`:""}</div>
+        <div>${S.motm.rate?`<div class="motm-rate">${esc(S.motm.rate)}</div>`:""}${(S.motm.pos||S.motm.number)?`<div class="motm-pos">${esc([S.motm.pos,S.motm.number?"#"+S.motm.number:""].filter(Boolean).join(" · "))}</div>`:""}</div>
         <div class="motm-pos" style="margin-top:8px;">${esc(tn)}</div>
       </div>
       ${photo}
       <div class="motm-name">${esc(S.motm.name)||"PLAYER NAME"}</div>
+      ${(S.motm.club||S.motm.league)?`<div class="motm-club">${esc([S.motm.club,S.motm.league].filter(Boolean).join(" · "))}</div>`:""}
       <div class="motm-chips">${chips}</div>
     </div>
     ${footer()}
@@ -789,6 +816,9 @@ function applyMatchJSON(d){
     if(p.rate!=null)S.motm.rate=String(p.rate);  // "" clears the demo rating
     S.motm.team=p.team==="B"?"B":"A";
     if(p.img!=null){S.motm.img=p.img?String(p.img):null;if(p.img)S.motmTint=true;} // load + theme the photo
+    if(p.club!=null)S.motm.club=String(p.club);
+    if(p.league!=null)S.motm.league=String(p.league);
+    if(p.number!=null)S.motm.number=String(p.number);
     if(Array.isArray(p.chips)){
       const arr=p.chips.slice(0,3).map(c=>[String(c[0]??""),String(c[1]??"")]);
       while(arr.length<3)arr.push(["",""]);       // keep 3 for the editor fields

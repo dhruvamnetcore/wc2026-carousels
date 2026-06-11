@@ -3,9 +3,9 @@
   "teamB": "South Africa",
   "scoreA": 2,
   "scoreB": 0,
-  "venue": "Estadio Azteca",
+  "venue": "Estadio Azteca, Mexico City, MX",
   "date": "2026-06-11",
-  "comp": "World Cup",
+  "comp": "World Cup · Group A · Match 1",
   "handle": "@fwc_2k26",
   "slides": [
     "cover",
@@ -44,6 +44,9 @@
     "pos": "FWD",
     "rate": "",
     "team": "A",
+    "club": "Al-Qadsiah",
+    "league": "Saudi-Arabian Pro League",
+    "number": "33",
     "chips": [
       [
         "GOALS",

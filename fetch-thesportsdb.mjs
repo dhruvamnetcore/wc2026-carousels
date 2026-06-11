@@ -125,6 +125,18 @@ function buildStats(eventstats) {
   return out;
 }
 
+/* competition label: "World Cup · Group A · Match 1" (group stage), else stage */
+function buildComp(e) {
+  const parts = [String(e.strLeague || "World Cup").replace(/^FIFA\s+/i, "")];
+  if (e.strGroup) {
+    parts.push(`Group ${e.strGroup}`);
+    if (e.intRound) parts.push(`Match ${e.intRound}`);
+  } else if (e.strStage) {
+    parts.push(e.strStage);
+  }
+  return parts.join(" · ");
+}
+
 /* TheSportsDB free-text position -> short studio label */
 const POS = s => {
   const x = norm(s);
@@ -158,21 +170,27 @@ async function buildMotm(timeline) {
   let assists = 0;
   for (const g of goals) if (g.strAssist && norm(g.strAssist) === norm(top.who)) assists++;
 
-  let pos = "", img = null;
+  let pos = "", img = null, club = "", league = "", number = "";
   if (top.idPlayer) {
     try {
       const p = (await tsdb(`lookupplayer.php?id=${top.idPlayer}`)).players?.[0];
       if (p) {
         pos = POS(p.strPosition);
+        club = p.strTeam || "";
+        number = p.strNumber || "";
         const url = p.strCutout || p.strRender || p.strThumb || null;
         if (url) img = await toDataUri(url); // embed so the studio + export are self-contained
+        if (p.idTeam) { // club -> league (one more lookup, by exact club id)
+          try { league = (await tsdb(`lookupteam.php?id=${p.idTeam}`)).teams?.[0]?.strLeague || ""; }
+          catch { /* league is a nice-to-have */ }
+        }
       }
     } catch { /* enrichment is best-effort; fall back to bare card */ }
   }
 
   const chips = [["GOALS", String(top.goals)]];
   if (assists) chips.push(["ASSISTS", String(assists)]);
-  return { name: top.who, pos, rate: "", team: top.team, chips, ...(img ? { img } : {}) };
+  return { name: top.who, pos, rate: "", team: top.team, club, league, number, chips, ...(img ? { img } : {}) };
 }
 
 async function processEvent(e) {
@@ -182,10 +200,12 @@ async function processEvent(e) {
   const file = `matches/${date}-${slug(ourA)}-vs-${slug(ourB)}.json`;
   if (existsSync(file)) { console.log(`• ${label}: already fetched`); return false; }
 
-  const [tl, st] = await Promise.all([
+  const [tl, st, full] = await Promise.all([
     tsdb(`lookuptimeline.php?id=${e.idEvent}`).then(d => d.timeline).catch(() => []),
     tsdb(`lookupeventstats.php?id=${e.idEvent}`).then(d => d.eventstats).catch(() => []),
+    tsdb(`lookupevent.php?id=${e.idEvent}`).then(d => d.events?.[0]).catch(() => null),
   ]);
+  const ev = full ? { ...e, ...full } : e; // full detail carries strGroup / intRound / venue
 
   const moments = buildMoments(tl);
   const stats = buildStats(st);
@@ -196,8 +216,8 @@ async function processEvent(e) {
   if (Object.keys(stats).length) slides.push("stats");
   if (motm) slides.push("motm");
 
-  const comp = String(e.strLeague || "World Cup").replace(/^FIFA\s+/i, "");
-  const venue = [e.strVenue, e.strCity].filter(Boolean).join(", ");
+  const comp = buildComp(ev);
+  const venue = [ev.strVenue, ev.strCity].filter(Boolean).join(", ");
 
   const out = {
     teamA: ourA, teamB: ourB,
