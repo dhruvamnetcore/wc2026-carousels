@@ -37,6 +37,7 @@ jobs:
         run: |
           git config user.name "matchday-bot"
           git config user.email "matchday-bot@users.noreply.github.com"
+          mkdir -p matches posts   # ensure the paths exist on "nothing new" runs
           git add matches/ posts/
           git diff --staged --quiet || (git commit -m "match data + slides $(date -u +'%Y-%m-%d %H:%M UTC')" && git push)
 
@@ -50,5 +51,6 @@ jobs:
         run: |
           git config user.name "matchday-bot"
           git config user.email "matchday-bot@users.noreply.github.com"
+          mkdir -p posts   # ensure the path exists on "nothing new" runs
           git add posts/
           git diff --staged --quiet || (git commit -m "posted markers $(date -u +'%Y-%m-%d %H:%M UTC')" && git push)

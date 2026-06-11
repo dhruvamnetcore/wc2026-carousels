@@ -1,0 +1,54 @@
+{
+  "teamA": "Mexico",
+  "teamB": "South Africa",
+  "scoreA": 2,
+  "scoreB": 0,
+  "venue": "Estadio Azteca",
+  "date": "2026-06-11",
+  "comp": "World Cup",
+  "slides": [
+    "cover",
+    "moments",
+    "stats",
+    "motm"
+  ],
+  "moments": [
+    {
+      "min": "9",
+      "team": "A",
+      "type": "goal",
+      "who": "Julián Quiñones",
+      "what": "Assist: Érik Lira"
+    },
+    {
+      "min": "49",
+      "team": "B",
+      "type": "red",
+      "who": "Sphephelo Sithole",
+      "what": "Tripping"
+    }
+  ],
+  "stats": {
+    "On target": [
+      4,
+      2
+    ],
+    "Shots": [
+      16,
+      3
+    ]
+  },
+  "motm": {
+    "name": "Julián Quiñones",
+    "pos": "",
+    "rate": "",
+    "team": "A",
+    "chips": [
+      [
+        "GOALS",
+        "1"
+      ]
+    ]
+  },
+  "_source": "thesportsdb"
+}
