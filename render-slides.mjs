@@ -39,45 +39,34 @@ for (const f of todo) {
   const outDir = path.join("posts", slug);
   mkdirSync(outDir, { recursive: true });
 
-  /* MOTM photo: a local photos/<name>.png you have rights to wins; otherwise
-     fall back to the cutout URL the fetcher embedded (data.motm.img), pulled
-     and inlined here so the screenshot never races an async image load. */
-  let photo = null;
-  let photoIsRemote = false; // tint only auto-fetched photos, not your own photos/ image
+  /* MOTM photo: a local photos/<name>.png you have rights to overrides the
+     auto one (and stays untinted); otherwise the auto photo embedded in the
+     match file (data.motm.img) is used and themed. */
+  let localImg = null;
   if (data.motm?.name) {
     const ps = pslug(data.motm.name);
     for (const ext of ["png", "jpg", "jpeg"]) {
       const p = path.join("photos", `${ps}.${ext}`);
       if (existsSync(p)) {
-        photo = `data:image/${ext === "png" ? "png" : "jpeg"};base64,` + readFileSync(p).toString("base64");
+        localImg = `data:image/${ext === "png" ? "png" : "jpeg"};base64,` + readFileSync(p).toString("base64");
         console.log(`  using player photo photos/${ps}.${ext}`);
         break;
       }
     }
-    if (!photo && typeof data.motm.img === "string" && /^https?:\/\//.test(data.motm.img)) {
-      try {
-        const r = await fetch(data.motm.img);
-        if (r.ok) {
-          const ct = r.headers.get("content-type") || "image/png";
-          photo = `data:${ct};base64,` + Buffer.from(await r.arrayBuffer()).toString("base64");
-          photoIsRemote = true;
-          console.log(`  using remote player photo ${data.motm.img}`);
-        }
-      } catch (e) { console.log(`  ! couldn't fetch player photo: ${e.message}`); }
-    }
   }
+  const useTint = !!(data.motm && data.motm.img) && !localImg;
 
   /* import the match into the live studio page */
-  await page.evaluate((d, slides, img, handle, tint) => {
+  await page.evaluate((d, slides, handle, tint, localImg) => {
     S.order = slides.slice();
     S.enabled = { cover: false, moments: false, stats: false, motm: false };
     slides.forEach(k => { S.enabled[k] = true; });
     applyMatchJSON(d);
     if (handle) S.handle = handle;
     S.motmTint = !!tint;
-    if (img) S.motm.img = img;
+    if (localImg) S.motm.img = localImg;
     drawOutput();
-  }, data, slidesForMatch, photo, CFG.handle || "", photoIsRemote);
+  }, data, slidesForMatch, CFG.handle || "", useTint, localImg);
 
   /* wait for display fonts and embedded flags */
   await page.evaluate(() => document.fonts.ready);

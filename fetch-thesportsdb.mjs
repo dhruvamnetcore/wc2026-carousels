@@ -58,6 +58,19 @@ async function tsdb(path) {
   return r.json();
 }
 
+/* Download an image URL and inline it as a data: URI, so the match file is
+   self-contained — the studio's "Load latest" can display AND export it
+   (html-to-image drops remote cross-origin images), and the renderer needs
+   no second fetch. */
+async function toDataUri(url) {
+  try {
+    const r = await fetch(url);
+    if (!r.ok) return null;
+    const ct = r.headers.get("content-type") || "image/png";
+    return `data:${ct};base64,` + Buffer.from(await r.arrayBuffer()).toString("base64");
+  } catch { return null; }
+}
+
 /* A fixture is "finished" if it has both scores AND either a finished status or
    it kicked off long enough ago that it cannot still be in play (guards against
    stale "2H"-type statuses in the data). */
@@ -149,7 +162,11 @@ async function buildMotm(timeline) {
   if (top.idPlayer) {
     try {
       const p = (await tsdb(`lookupplayer.php?id=${top.idPlayer}`)).players?.[0];
-      if (p) { pos = POS(p.strPosition); img = p.strCutout || p.strThumb || null; }
+      if (p) {
+        pos = POS(p.strPosition);
+        const url = p.strCutout || p.strRender || p.strThumb || null;
+        if (url) img = await toDataUri(url); // embed so the studio + export are self-contained
+      }
     } catch { /* enrichment is best-effort; fall back to bare card */ }
   }
 
@@ -186,6 +203,7 @@ async function processEvent(e) {
     teamA: ourA, teamB: ourB,
     scoreA: parseInt(e.intHomeScore), scoreB: parseInt(e.intAwayScore),
     venue, date, comp,
+    ...(CFG.handle ? { handle: CFG.handle } : {}),
     slides,
     moments, stats,
     ...(motm ? { motm } : {}),

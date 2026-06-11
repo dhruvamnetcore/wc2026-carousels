@@ -266,7 +266,7 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
       <div class="fld"><small>Venue</small><input id="venue" type="text" placeholder="Stadium, City"></div>
       <div class="fld"><small>Date</small><input id="mdate" type="date"></div>
       <div class="fld"><small>Competition label</small><input id="comp" type="text" value="International Friendly"></div>
-      <div class="fld"><small>Your @handle</small><input id="handle" type="text" value="@yourhandle"></div>
+      <div class="fld"><small>Your @handle</small><input id="handle" type="text" value="@fwc_2k26"></div>
     </div>
     <div class="row" style="align-items:flex-end;">
       <div style="flex:1;min-width:240px;">
@@ -773,6 +773,7 @@ function applyMatchJSON(d){
   if(d.venue!=null)S.venue=d.venue;
   if(d.date)S.date=d.date;
   if(d.comp)S.comp=d.comp;
+  if(d.handle)S.handle=String(d.handle);
   if(Array.isArray(d.moments))S.moments=d.moments.slice(0,10).map(m=>({min:String(m.min??""),team:m.team==="B"?"B":"A",type:TYPES[m.type]?m.type:"goal",who:m.who||"",what:m.what||""}));
   // rebuild stats from ONLY the keys the file provides, so a source without
   // (say) xG/possession/corners doesn't fall back to the demo defaults
@@ -787,6 +788,7 @@ function applyMatchJSON(d){
     if(p.pos!=null)S.motm.pos=String(p.pos);     // "" clears the demo position
     if(p.rate!=null)S.motm.rate=String(p.rate);  // "" clears the demo rating
     S.motm.team=p.team==="B"?"B":"A";
+    if(p.img!=null){S.motm.img=p.img?String(p.img):null;if(p.img)S.motmTint=true;} // load + theme the photo
     if(Array.isArray(p.chips)){
       const arr=p.chips.slice(0,3).map(c=>[String(c[0]??""),String(c[1]??"")]);
       while(arr.length<3)arr.push(["",""]);       // keep 3 for the editor fields
@@ -796,7 +798,7 @@ function applyMatchJSON(d){
   // sync every editor field to the imported state
   fillTeamSelect($("teamA"),S.teamA);fillTeamSelect($("teamB"),S.teamB);
   $("scoreA").value=S.scoreA;$("scoreB").value=S.scoreB;$("venue").value=S.venue;
-  $("mdate").value=S.date||"";$("comp").value=S.comp;
+  $("mdate").value=S.date||"";$("comp").value=S.comp;$("handle").value=S.handle;
   $("pmName").value=S.motm.name;$("pmPos").value=S.motm.pos;$("pmRate").value=S.motm.rate;$("pmTeam").value=S.motm.team;
   [["c1l",0,0],["c1v",0,1],["c2l",1,0],["c2v",1,1],["c3l",2,0],["c3v",2,1]].forEach(([id,i,j])=>{$(id).value=S.motm.chips[i][j];});
   renderMoments();renderStats();drawOutput();
