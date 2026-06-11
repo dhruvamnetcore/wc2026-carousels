@@ -209,6 +209,12 @@ async function processEvent(e) {
 
   const moments = buildMoments(tl);
   const stats = buildStats(st);
+  // TheSportsDB omits cards/corners/fouls from match stats — derive yellow cards
+  // from the timeline (corners/fouls/passes simply aren't in the free data; add
+  // those by hand in the studio's stats editor).
+  const yc = [0, 0];
+  for (const t of tl || []) if (norm(t.strTimeline) === "card" && norm(t.strTimelineDetail).includes("yellow")) yc[norm(t.strHome) === "yes" ? 0 : 1]++;
+  if (yc[0] || yc[1]) stats["Yellow cards"] = yc;
   const motm = await buildMotm(tl);
 
   // per-match slide list so empty cards are never rendered
