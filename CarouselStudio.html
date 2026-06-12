@@ -266,7 +266,7 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .motm-top{width:100%;display:flex;justify-content:space-between;align-items:flex-start;}
 .motm-rate{font-family:'Anton',sans-serif;font-size:calc(var(--u)*120);line-height:.95;}
 .motm-pos{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*28);letter-spacing:calc(var(--u)*3);margin-top:calc(var(--u)*8);text-transform:uppercase;}
-.motm-photo{width:calc(var(--u)*360);height:calc(var(--u)*360);border-radius:50%;object-fit:cover;border:calc(var(--u)*8) solid rgba(255,255,255,.85);margin-top:calc(var(--u)*-30);background:rgba(0,0,0,.25);}
+.motm-photo{width:calc(var(--u)*360);height:calc(var(--u)*360);border-radius:50%;object-fit:cover;border:calc(var(--u)*8) solid rgba(255,255,255,.85);margin-top:calc(var(--u)*16);background:rgba(0,0,0,.25);}
 .motm-photo.ph{display:flex;align-items:center;justify-content:center;font-size:calc(var(--u)*120);}
 .motm-name{font-family:'Anton',sans-serif;font-size:calc(var(--u)*64);text-transform:uppercase;text-align:center;line-height:1.05;margin-top:calc(var(--u)*34);letter-spacing:calc(var(--u)*1);}
 .motm-club{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*24);text-align:center;opacity:.82;margin-top:calc(var(--u)*14);letter-spacing:calc(var(--u)*1);line-height:1.3;}
@@ -775,12 +775,14 @@ function buildStats(A,B){
 function buildMotm(A,B){
   const T=S.motm.team==="B"?B:A, other=S.motm.team==="B"?A:B;
   const tn=S.motm.team==="B"?team(S.teamB).n:team(S.teamA).n;
-  // full-body cutouts (FIFA) anchored at the top + zoomed -> head-to-chest framing
-  const tintOverlays = `<span style="position:absolute;inset:0;background:linear-gradient(160deg, ${alpha(T.primary,.58)} 0%, ${alpha(T.accent,.5)} 100%);mix-blend-mode:color;"></span><span style="position:absolute;inset:0;background:linear-gradient(180deg, transparent 45%, ${alpha(T.deep,.55)} 100%);"></span>`;
+  // full-body cutouts (FIFA) anchored at the top + zoomed -> head-to-chest framing,
+  // on a DARK backdrop disc so the player pops even when their kit matches the card colour.
+  const photoBg = `radial-gradient(circle at 50% 36%, ${mix(T.primary,'#05050a',0.72)} 0%, #07070d 74%)`;
+  const themeWash = `<span style="position:absolute;inset:0;background:linear-gradient(160deg, ${alpha(T.primary,.20)} 0%, ${alpha(T.accent,.14)} 100%);mix-blend-mode:soft-light;"></span><span style="position:absolute;inset:0;background:linear-gradient(180deg, transparent 58%, ${alpha('#05050a',.55)} 100%);"></span>`;
   const photo=S.motm.img
-    ? `<div class="motm-photo" style="position:relative;overflow:hidden;">
-         <img src="${S.motm.img}" alt="" style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:170%;height:auto;${S.motmTint?"filter:grayscale(.5) contrast(1.06) brightness(1.02);":""}">
-         ${S.motmTint?tintOverlays:""}
+    ? `<div class="motm-photo" style="position:relative;overflow:hidden;background:${photoBg};">
+         <img src="${S.motm.img}" alt="" style="position:absolute;top:4%;left:50%;transform:translateX(-50%);width:158%;height:auto;${S.motmTint?"filter:contrast(1.04) saturate(1.06);":""}">
+         ${S.motmTint?themeWash:""}
        </div>`
     : `<div class="motm-photo ph" style="color:${alpha(T.ink,.5)};">👤</div>`;
   const chips=S.motm.chips.filter(c=>String(c[0]).trim()||String(c[1]).trim()).map(c=>`<div class="motm-chip" style="color:${T.ink};"><div class="cl">${esc(c[0])}</div><div class="cvv" style="color:${T.ink==='#ffffff'?T.secondary:T.ink};">${esc(c[1])}</div></div>`).join("");
