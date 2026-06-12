@@ -19,7 +19,7 @@
    Idempotent: already-written matches are skipped. Node 18+ (built-in fetch).
    ============================================================================ */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 
 const KEY = process.env.THESPORTSDB_KEY || "3"; // "3" is TheSportsDB's free public test key
 const API = `https://www.thesportsdb.com/api/v1/json/${KEY}`;
@@ -225,6 +225,14 @@ async function processEvent(e) {
   const comp = buildComp(ev);
   const venue = [ev.strVenue, ev.strCity].filter(Boolean).join(", ");
 
+  // data-quality flags — so you only review the few matches with gaps, not all
+  const review = [];
+  const total = (parseInt(ev.intHomeScore) || 0) + (parseInt(ev.intAwayScore) || 0);
+  const tlGoals = moments.filter(m => m.type === "goal" || m.type === "pen").length;
+  if (tlGoals < total) review.push(`Timeline shows ${tlGoals} of ${total} goals — ${total - tlGoals} missing from the source; add the scorer(s) in the editor.`);
+  else if (tlGoals > total) review.push(`Timeline has ${tlGoals} goals but the score totals ${total} — double-check.`);
+  if (!Object.keys(stats).length) review.push(`No match stats came from the source — add them by hand if you want the stats slide.`);
+
   const out = {
     teamA: ourA, teamB: ourB,
     scoreA: parseInt(e.intHomeScore), scoreB: parseInt(e.intAwayScore),
@@ -233,12 +241,14 @@ async function processEvent(e) {
     slides,
     moments, stats,
     ...(motm ? { motm } : {}),
+    ...(review.length ? { review } : {}),
     _source: "thesportsdb",
   };
 
   writeFileSync(file, JSON.stringify(out, null, 2));
   writeFileSync("matches/latest.json", JSON.stringify(out, null, 2));
   console.log(`✓ ${label}: saved ${file} (+ latest.json) [slides: ${slides.join(", ")}]`);
+  if (review.length) console.log(`  ⚠ NEEDS REVIEW: ${review.join(" | ")}`);
   return true;
 }
 
@@ -292,5 +302,25 @@ for (const lg of CFG.autoLeagues || []) {
     }
   } catch (err) { console.error(`✗ autoLeagues "${lg}": ${err.message}`); }
 }
+
+/* rebuild NEEDS_REVIEW.md — one glance tells you which matches have gaps */
+const flagged = [];
+for (const f of readdirSync("matches")) {
+  if (!f.endsWith(".json") || f === "latest.json") continue;
+  try {
+    const m = JSON.parse(readFileSync(`matches/${f}`, "utf8"));
+    if (Array.isArray(m.review) && m.review.length) flagged.push(m);
+  } catch { /* skip unreadable */ }
+}
+flagged.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+let md = `# Matches needing review\n\n_Auto-generated each run. These matches have data gaps (usually goals the free source didn't record). Open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed here looked complete._\n\n`;
+if (!flagged.length) md += `✓ Nothing flagged — all fetched matches look complete.\n`;
+else for (const m of flagged) {
+  md += `### ${m.teamA} ${m.scoreA}–${m.scoreB} ${m.teamB} — ${m.date}\n`;
+  for (const r of m.review) md += `- ${r}\n`;
+  md += `\n`;
+}
+writeFileSync("NEEDS_REVIEW.md", md);
+console.log(flagged.length ? `⚠ ${flagged.length} match(es) need review — see NEEDS_REVIEW.md` : "✓ no matches need review");
 
 console.log(wrote ? `Done — ${wrote} new match file(s).` : "Done — nothing new this run.");

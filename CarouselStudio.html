@@ -889,8 +889,10 @@ function applyMatchJSON(d){
   $("pmName").value=S.motm.name;$("pmPos").value=S.motm.pos;$("pmRate").value=S.motm.rate;$("pmTeam").value=S.motm.team;
   [["c1l",0,0],["c1v",0,1],["c2l",1,0],["c2v",1,1],["c3l",2,0],["c3v",2,1]].forEach(([id,i,j])=>{$(id).value=S.motm.chips[i][j];});
   renderMoments();renderStats();drawOutput();
+  // surface data-gap flags written by the fetcher so you verify before posting
+  if(Array.isArray(d.review))d.review.forEach(r=>warn.push(r));
   const err=$("err");
-  if(warn.length){err.textContent="Imported with warnings: "+warn.join(" · ");err.classList.remove("hidden");}
+  if(warn.length){err.textContent="⚠ Needs review: "+warn.join(" · ");err.classList.remove("hidden");}
   else err.classList.add("hidden");
 }
 $("importJson").addEventListener("change",e=>{
