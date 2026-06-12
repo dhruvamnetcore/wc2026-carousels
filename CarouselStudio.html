@@ -137,10 +137,14 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .add{background:transparent;border:1px dashed var(--line2);color:var(--mut);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;}
 .add:hover:not(:disabled){border-color:var(--acc);color:var(--acc);}
 .add:disabled{opacity:.4;cursor:not-allowed;}
-.strow{display:grid;grid-template-columns:78px 1fr 78px 34px;gap:8px;align-items:center;margin-bottom:8px;}
+.strow{display:grid;grid-template-columns:58px 1fr 58px auto;gap:8px;align-items:center;margin-bottom:8px;}
 .strow .stl{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:1.5px;color:var(--mut);text-transform:uppercase;}
 .strow .stname{text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
-.strow .del{background:transparent;border:1px solid var(--line);color:var(--bad);border-radius:9px;height:40px;cursor:pointer;transition:.15s;}
+.strow-actions{display:flex;gap:4px;}
+.strow-actions button{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:8px;height:40px;width:28px;cursor:pointer;font-size:13px;line-height:1;transition:.15s;font-family:inherit;}
+.strow-actions button:hover:not(:disabled){border-color:var(--line2);color:#fff;}
+.strow-actions button.del{color:var(--bad);}
+.strow-actions button:disabled{opacity:.28;cursor:default;}
 .photo-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:14px;}
 .photo-thumb{width:54px;height:54px;border-radius:12px;background:var(--well);border:1px solid var(--line);object-fit:cover;}
 @media (max-width:680px){
@@ -573,14 +577,25 @@ $("addMoment").onclick=()=>{if(S.moments.length<10){S.moments.push({min:"",team:
 renderMoments();
 
 /* ---------- editor: stats ---------- */
+function moveStat(k,dir){ // reorder a stat row up (-1) or down (+1)
+  const keys=Object.keys(S.stats);
+  const i=keys.indexOf(k),j=i+dir;
+  if(j<0||j>=keys.length)return;
+  [keys[i],keys[j]]=[keys[j],keys[i]];
+  const o={};keys.forEach(key=>o[key]=S.stats[key]);S.stats=o;
+  renderStats();drawOutput();
+}
 function renderStats(){
   const box=$("strows");box.innerHTML="";
-  Object.keys(S.stats).forEach(k=>{
+  Object.keys(S.stats).forEach((k,i,arr)=>{
     const row=document.createElement("div");row.className="strow";
     row.innerHTML=`<input type="number" step="any" min="0" value="${S.stats[k][0]}">`
       +`<input class="stname" type="text" list="statpresets" value="${esc(k)}" placeholder="stat name">`
       +`<input type="number" step="any" min="0" value="${S.stats[k][1]}">`
-      +`<button class="del" aria-label="Remove">✕</button>`;
+      +`<div class="strow-actions">`
+      +`<button class="up" title="Move up"${i===0?" disabled":""}>↑</button>`
+      +`<button class="down" title="Move down"${i===arr.length-1?" disabled":""}>↓</button>`
+      +`<button class="del" title="Remove">✕</button></div>`;
     const a=row.children[0],nameI=row.children[1],b=row.children[2];
     a.oninput=e=>{S.stats[k][0]=parseFloat(e.target.value)||0;drawOutput();};
     b.oninput=e=>{S.stats[k][1]=parseFloat(e.target.value)||0;drawOutput();};
@@ -589,6 +604,8 @@ function renderStats(){
       if(!nn||(nn!==k&&Object.prototype.hasOwnProperty.call(S.stats,nn))){renderStats();return;} // empty or duplicate -> revert
       if(nn!==k){const o={};Object.keys(S.stats).forEach(key=>{o[key===k?nn:key]=S.stats[key];});S.stats=o;renderStats();drawOutput();}
     };
+    row.querySelector(".up").onclick=()=>moveStat(k,-1);
+    row.querySelector(".down").onclick=()=>moveStat(k,1);
     row.querySelector(".del").onclick=()=>{delete S.stats[k];renderStats();drawOutput();};
     box.appendChild(row);
   });
@@ -721,18 +738,17 @@ function buildMoments(A,B){
 }
 
 function buildStats(A,B){
-  const ks=Object.keys(S.stats);
-  const hasPoss=Array.isArray(S.stats.Possession);
-  const poss=S.stats.Possession||[50,50];
-  const pTot=(poss[0]+poss[1])||1;
-  const possBlock=hasPoss?`<div>
+  const possBlock=()=>{
+    const poss=S.stats.Possession||[50,50], pTot=(poss[0]+poss[1])||1;
+    return `<div>
         <div class="st-lbl">Possession</div>
         <div class="poss">
           <div class="pb" style="width:${(poss[0]/pTot*100).toFixed(1)}%;background:${A.primary};color:${A.ink};">${poss[0]}%</div>
           <div style="width:${(poss[1]/pTot*100).toFixed(1)}%;background:${B.primary};color:${B.ink};">${poss[1]}%</div>
         </div>
-      </div>`:"";
-  const rows=ks.filter(k=>k!=="Possession").map(k=>{
+      </div>`;
+  };
+  const barBlock=k=>{
     const [a,b]=S.stats[k], mx=Math.max(a,b,0.001);
     return `<div>
       <div class="st-lbl">${esc(k)}</div>
@@ -745,13 +761,13 @@ function buildStats(A,B){
         <span class="st-num">${b}</span>
       </div>
     </div>`;
-  }).join("");
+  };
+  // render every stat in the editor's order (Possession keeps its bar wherever you place it)
+  const blocks=Object.keys(S.stats).map(k=>
+    (k==="Possession"&&Array.isArray(S.stats.Possession))?possBlock():barBlock(k)).join("");
   return `<div class="art">${dualBg(A,B)}${grain()}
     ${slHead("MATCH STATS",A,B)}
-    <div class="stats">
-      ${possBlock}
-      ${rows}
-    </div>
+    <div class="stats">${blocks}</div>
     ${footer()}
   </div>`;
 }
