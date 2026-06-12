@@ -45,6 +45,16 @@ async function fifa(path) {
   return r.json();
 }
 
+/* download an image and inline it as a data: URI (self-contained for studio + render) */
+async function toDataUri(url) {
+  try {
+    const r = await fetch(url, { headers: { "User-Agent": UA } });
+    if (!r.ok) return null;
+    const ct = r.headers.get("content-type") || "image/png";
+    return `data:${ct};base64,` + Buffer.from(await r.arrayBuffer()).toString("base64");
+  } catch { return null; }
+}
+
 /* ---- player names (cached) ---- */
 const nameCache = {};
 async function playerName(id) {
@@ -162,24 +172,36 @@ async function processMatch(cal) {
   [home, away].forEach((t, i) => (t.Bookings || []).forEach(bk => { if (Number(bk.Card) === 1) yc[i]++; }));
   if (yc[0] || yc[1]) stats["Yellow cards"] = yc;
 
-  // MOTM: top scorer (now from COMPLETE goal data); headshot via TheSportsDB
+  // MOTM: top scorer from raw goals (carry IdPlayer); when tied, prefer the winner
   let motm = null;
-  const goalCount = {};
-  for (const m of moments) if (m.type === "goal") (goalCount[m.who] = goalCount[m.who] || { who: m.who, team: m.team, n: 0 }).n++;
-  // top scorer; when tied, prefer the winning team's scorer
+  const tally = {};
+  for (const [side, t] of [["A", home], ["B", away]])
+    for (const g of t.Goals || []) {
+      const id = g.IdPlayer || `${side}-${g.Minute}`;
+      (tally[id] = tally[id] || { id: g.IdPlayer, team: side, n: 0 }).n++;
+    }
   const winner = (parseInt(scoreA) || 0) > (parseInt(scoreB) || 0) ? "A" : (parseInt(scoreB) || 0) > (parseInt(scoreA) || 0) ? "B" : null;
-  const scorers = Object.values(goalCount);
+  const scorers = Object.values(tally);
   const maxN = scorers.reduce((mx, s) => Math.max(mx, s.n), 0);
   const top = scorers.filter(s => s.n === maxN).sort((a, b) => (b.team === winner) - (a.team === winner))[0];
-  if (top && top.who) {
-    const extra = await tsdbPlayer(top.who);
-    const assists = moments.filter(m => m.what === `Assist: ${top.who}`).length;
+  if (top) {
+    const name = await playerName(top.id);
+    // photo: FIFA lineup cutout by player id (reliable cutout, transparent PNG)
+    const lp = [...(home.Players || []), ...(away.Players || [])].find(p => String(p.IdPlayer) === String(top.id));
+    let img = null;
+    const purl = lp?.PlayerPicture?.PictureUrl;
+    if (purl) img = await toDataUri(`${purl}?io=transform:fill,width:600`);
+    // club / league / position from TheSportsDB by name (best-effort); photo fallback too
+    const extra = await tsdbPlayer(name);
+    if (!img && extra?.img) img = extra.img;
+    const assists = moments.filter(m => m.what === `Assist: ${name}`).length;
     const chips = [["GOALS", String(top.n)]];
     if (assists) chips.push(["ASSISTS", String(assists)]);
     motm = {
-      name: top.who, team: top.team, rate: "",
-      pos: extra?.pos || "", club: extra?.club || "", league: extra?.league || "", number: extra?.number || "",
-      chips, ...(extra?.img ? { img: extra.img } : {}),
+      name, team: top.team, rate: "",
+      pos: extra?.pos || "", club: extra?.club || "", league: extra?.league || "",
+      number: lp?.ShirtNumber || extra?.number || "",
+      chips, ...(img ? { img } : {}),
     };
   }
 
