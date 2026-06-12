@@ -84,6 +84,34 @@ const shortPos = s => {
   return s.toUpperCase();
 };
 
+/* ---- TheSportsDB: match stats (FIFA has none here) — shot breakdown ---- */
+const TSDB = "https://www.thesportsdb.com/api/v1/json/3";
+const canon = s => { const x = norm(s); if (x.includes("czech")) return "czechia"; if (x.includes("korea republic") || x === "south korea") return "south korea"; return x; };
+let tsdbSeason = null;
+async function tsdbWcEvents() {
+  if (!tsdbSeason) { try { tsdbSeason = (await (await fetch(`${TSDB}/eventsseason.php?id=4429&s=2026`)).json()).events || []; } catch { tsdbSeason = []; } }
+  return tsdbSeason;
+}
+const STAT_MAP = { "total shots": "Shots", "shots on goal": "On target", "shots off goal": "Off target", "blocked shots": "Blocked", "shots insidebox": "Shots in box" };
+async function tsdbStats(ourA, ourB, date) {
+  try {
+    const want = new Set([canon(ourA), canon(ourB)]);
+    const ev = (await tsdbWcEvents()).find(e =>
+      e.dateEvent === date && [canon(e.strHomeTeam), canon(e.strAwayTeam)].every(t => want.has(t)));
+    if (!ev) return {};
+    const homeIsA = canon(ev.strHomeTeam) === canon(ourA);
+    const rows = (await (await fetch(`${TSDB}/lookupeventstats.php?id=${ev.idEvent}`)).json()).eventstats || [];
+    const out = {};
+    for (const st of rows) {
+      const k = STAT_MAP[norm(st.strStat)];
+      if (!k) continue;
+      const h = parseFloat(st.intHome) || 0, a = parseFloat(st.intAway) || 0;
+      out[k] = homeIsA ? [h, a] : [a, h];   // orient to studio A(home)/B(away)
+    }
+    return out;
+  } catch { return {}; }
+}
+
 /* competition label: "World Cup · Group A · Match 2" */
 function buildComp(m) {
   const parts = ["World Cup"];
@@ -128,10 +156,10 @@ async function processMatch(cal) {
 
   const moments = await buildMoments(home, away);
 
-  // stats: yellow-card counts (FIFA has no shots/possession here) — add the rest by hand in the studio
+  // stats: shot breakdown from TheSportsDB (FIFA has none here) + yellow cards from FIFA
+  const stats = await tsdbStats(ourA, ourB, date);
   const yc = [0, 0];
   [home, away].forEach((t, i) => (t.Bookings || []).forEach(bk => { if (Number(bk.Card) === 1) yc[i]++; }));
-  const stats = {};
   if (yc[0] || yc[1]) stats["Yellow cards"] = yc;
 
   // MOTM: top scorer (now from COMPLETE goal data); headshot via TheSportsDB

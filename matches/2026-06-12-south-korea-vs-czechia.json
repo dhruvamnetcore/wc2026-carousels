@@ -37,6 +37,26 @@
     }
   ],
   "stats": {
+    "On target": [
+      6,
+      4
+    ],
+    "Off target": [
+      5,
+      4
+    ],
+    "Shots": [
+      15,
+      8
+    ],
+    "Blocked": [
+      4,
+      1
+    ],
+    "Shots in box": [
+      10,
+      5
+    ],
     "Yellow cards": [
       1,
       0
