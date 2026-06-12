@@ -872,7 +872,7 @@ function applyMatchJSON(d){
     if(p.pos!=null)S.motm.pos=String(p.pos);     // "" clears the demo position
     if(p.rate!=null)S.motm.rate=String(p.rate);  // "" clears the demo rating
     S.motm.team=p.team==="B"?"B":"A";
-    if(p.img!=null){S.motm.img=p.img?String(p.img):null;if(p.img)S.motmTint=true;} // load + theme the photo
+    S.motm.img=p.img?String(p.img):null;S.motmTint=!!p.img; // set/CLEAR photo each import so a prior match's photo never leaks
     if(p.club!=null)S.motm.club=String(p.club);
     if(p.league!=null)S.motm.league=String(p.league);
     if(p.number!=null)S.motm.number=String(p.number);

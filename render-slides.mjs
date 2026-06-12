@@ -63,8 +63,8 @@ for (const f of todo) {
     slides.forEach(k => { S.enabled[k] = true; });
     applyMatchJSON(d);
     if (handle) S.handle = handle;
+    S.motm.img = localImg || (d.motm && d.motm.img) || null; // explicit per match — never leak the prior match's photo
     S.motmTint = !!tint;
-    if (localImg) S.motm.img = localImg;
     drawOutput();
   }, data, slidesForMatch, CFG.handle || "", useTint, localImg);
 
