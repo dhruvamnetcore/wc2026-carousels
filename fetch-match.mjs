@@ -16,10 +16,11 @@ const CFG = JSON.parse(readFileSync(new URL("./watchlist.json", import.meta.url)
 const src = String(CFG.source || "thesportsdb").toLowerCase().replace(/[^a-z]/g, "");
 
 const MODULES = {
+  fifa: "./fetch-fifa.mjs",
   thesportsdb: "./fetch-thesportsdb.mjs",
   apifootball: "./fetch-apifootball.mjs",
   apifootballcom: "./fetch-apifootball.mjs",
 };
-const mod = MODULES[src] || MODULES.thesportsdb;
+const mod = MODULES[src] || MODULES.fifa;
 console.log(`Data source: "${CFG.source || "thesportsdb"}" -> ${mod}`);
 await import(mod);
