@@ -2,7 +2,7 @@ name: Matchday pipeline
 
 on:
   schedule:
-    - cron: "15 * * * *"   # every hour at :15 UTC (GitHub cron is UTC, best-effort timing)
+    - cron: "*/30 * * * *"   # every 30 min (GitHub cron is best-effort; manual "Run workflow" is instant)
   workflow_dispatch:        # manual "Run workflow" button for testing
 
 permissions:
