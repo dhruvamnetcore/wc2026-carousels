@@ -254,16 +254,24 @@ try {
   }
 } catch (e) { console.error(`✗ FIFA calendar: ${e.message}`); }
 
-/* rebuild NEEDS_REVIEW.md digest */
-const flagged = [];
+/* rebuild matches/index.json — the full archive list Carousel Studio's
+   "Browse all matches" reads. One entry per saved match, newest first. */
+const indexEntries = [];
 for (const f of readdirSync("matches")) {
-  if (!f.endsWith(".json") || f === "latest.json") continue;
-  try { const m = JSON.parse(readFileSync(`matches/${f}`, "utf8")); if (m.review?.length) flagged.push(m); } catch { /* */ }
+  if (!f.endsWith(".json") || f === "latest.json" || f === "index.json") continue;
+  try {
+    const m = JSON.parse(readFileSync(`matches/${f}`, "utf8"));
+    indexEntries.push({
+      file: `matches/${f}`,
+      teamA: m.teamA, teamB: m.teamB,
+      scoreA: m.scoreA ?? null, scoreB: m.scoreB ?? null,
+      date: m.date || "", comp: m.comp || "",
+      status: m.status || "FT",
+      needsReview: Array.isArray(m.review) && m.review.length > 0,
+    });
+  } catch { /* skip unreadable */ }
 }
-flagged.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-let md = `# Matches needing review\n\n_Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._\n\n`;
-md += flagged.length ? flagged.map(m => `### ${m.teamA} ${m.scoreA}–${m.scoreB} ${m.teamB} — ${m.date}\n${m.review.map(r => `- ${r}`).join("\n")}\n`).join("\n")
-  : `✓ Nothing flagged — all fetched matches look complete.\n`;
-writeFileSync("NEEDS_REVIEW.md", md);
+indexEntries.sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.file).localeCompare(String(a.file)));
+writeFileSync("matches/index.json", JSON.stringify({ updated: new Date().toISOString(), matches: indexEntries }, null, 2));
+console.log(`✓ index.json rebuilt — ${indexEntries.length} match(es).`);
 
-console.log(wrote ? `Done — ${wrote} new match file(s).` : "Done — nothing new this run.");
