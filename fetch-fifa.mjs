@@ -102,7 +102,20 @@ async function tsdbWcEvents() {
   if (!tsdbSeason) { try { tsdbSeason = (await (await fetch(`${TSDB}/eventsseason.php?id=4429&s=2026`)).json()).events || []; } catch { tsdbSeason = []; } }
   return tsdbSeason;
 }
-const STAT_MAP = { "total shots": "Shots", "shots on goal": "On target", "shots off goal": "Off target", "blocked shots": "Blocked", "shots insidebox": "Shots in box" };
+/* Map TheSportsDB stat names → our decided, consistent labels.
+   The studio's stats slide prefers this fixed set; anything else is dropped
+   so every match shows the same rows in the same order. */
+const STAT_MAP = {
+  "ball possession": "Possession", "possession": "Possession", "possession %": "Possession",
+  "shots on goal": "Shots on target", "shots on target": "Shots on target",
+  "total shots": "Shots", "shots off goal": "Off target", "blocked shots": "Blocked", "shots insidebox": "Shots in box",
+  "passes": "Passes completed", "passes accurate": "Passes completed", "successful passes": "Passes completed", "accurate passes": "Passes completed", "total passes": "Passes completed",
+  "offsides": "Offsides", "offside": "Offsides",
+  "corner kicks": "Corners", "corners": "Corners", "fouls": "Fouls",
+  "goalkeeper saves": "Saves", "saves": "Saves",
+};
+/* The exact stats the studio's slide expects, in display order. */
+const STAT_ORDER = ["Goals", "Shots on target", "Possession", "Passes completed", "Offsides"];
 async function tsdbStats(ourA, ourB, date) {
   try {
     const want = new Set([canon(ourA), canon(ourB)]);
@@ -142,13 +155,24 @@ async function buildMoments(home, away) {
       evs.push({ min: minClean(g.Minute), team: side, type: "goal", who, what: assist ? `Assist: ${assist}` : "" });
     }
     for (const bk of t.Bookings || []) {
-      if (Number(bk.Card) > 1) { // 1 = yellow, >1 = red / second-yellow
+      const card = Number(bk.Card);
+      if (card > 1) { // 2 = second yellow / straight red
         evs.push({ min: minClean(bk.Minute), team: side, type: "red", who: await playerName(bk.IdPlayer), what: "" });
+      } else if (card === 1) { // 1 = yellow — now shown on the timeline too
+        evs.push({ min: minClean(bk.Minute), team: side, type: "yellow", who: await playerName(bk.IdPlayer), what: "" });
       }
     }
   }
   evs.sort((a, b) => (parseInt(a.min) || 0) - (parseInt(b.min) || 0));
-  return evs.slice(0, 10);
+  if (evs.length > 10) {
+    // keep every goal & red; drop the latest yellows first so the timeline stays meaningful
+    const keep = evs.filter(e => e.type !== "yellow");
+    const yellows = evs.filter(e => e.type === "yellow");
+    while (keep.length < 10 && yellows.length) keep.push(yellows.shift());
+    keep.sort((a, b) => (parseInt(a.min) || 0) - (parseInt(b.min) || 0));
+    return keep.slice(0, 10);
+  }
+  return evs;
 }
 
 async function processMatch(cal) {
@@ -166,10 +190,19 @@ async function processMatch(cal) {
 
   const moments = await buildMoments(home, away);
 
-  // stats: shot breakdown from TheSportsDB (FIFA has none here) + yellow cards from FIFA
-  const stats = await tsdbStats(ourA, ourB, date);
+  // stats: pull what TheSportsDB has, then assemble the DECIDED fixed set so
+  // every match shows the same rows (not whatever the source happened to return).
+  const raw = await tsdbStats(ourA, ourB, date);
   const yc = [0, 0];
   [home, away].forEach((t, i) => (t.Bookings || []).forEach(bk => { if (Number(bk.Card) === 1) yc[i]++; }));
+  const stats = {};
+  const statReview = [];
+  for (const key of STAT_ORDER) {
+    if (key === "Goals") { stats.Goals = [Number(scoreA) || 0, Number(scoreB) || 0]; continue; }
+    if (raw[key]) stats[key] = raw[key];
+    else { stats[key] = [0, 0]; statReview.push(key); } // placeholder keeps the row; flag for manual fill
+  }
+  // keep yellow cards too (useful + always available from FIFA)
   if (yc[0] || yc[1]) stats["Yellow cards"] = yc;
 
   // MOTM: top scorer from raw goals (carry IdPlayer); when tied, prefer the winner
@@ -217,7 +250,7 @@ async function processMatch(cal) {
   const total = (parseInt(scoreA) || 0) + (parseInt(scoreB) || 0);
   const tlGoals = moments.filter(m => m.type === "goal").length;
   if (tlGoals < total) review.push(`Timeline shows ${tlGoals} of ${total} goals — add the missing scorer(s) in the editor.`);
-  if (!Object.keys(stats).length) review.push(`No stats from the source — add shots/corners/etc. by hand if you want the stats slide.`);
+  if (statReview.length) review.push(`Stats not in the source — fill by hand: ${statReview.join(", ")}.`);
 
   const out = {
     teamA: ourA, teamB: ourB,
@@ -254,24 +287,16 @@ try {
   }
 } catch (e) { console.error(`✗ FIFA calendar: ${e.message}`); }
 
-/* rebuild matches/index.json — the full archive list Carousel Studio's
-   "Browse all matches" reads. One entry per saved match, newest first. */
-const indexEntries = [];
+/* rebuild NEEDS_REVIEW.md digest */
+const flagged = [];
 for (const f of readdirSync("matches")) {
-  if (!f.endsWith(".json") || f === "latest.json" || f === "index.json") continue;
-  try {
-    const m = JSON.parse(readFileSync(`matches/${f}`, "utf8"));
-    indexEntries.push({
-      file: `matches/${f}`,
-      teamA: m.teamA, teamB: m.teamB,
-      scoreA: m.scoreA ?? null, scoreB: m.scoreB ?? null,
-      date: m.date || "", comp: m.comp || "",
-      status: m.status || "FT",
-      needsReview: Array.isArray(m.review) && m.review.length > 0,
-    });
-  } catch { /* skip unreadable */ }
+  if (!f.endsWith(".json") || f === "latest.json") continue;
+  try { const m = JSON.parse(readFileSync(`matches/${f}`, "utf8")); if (m.review?.length) flagged.push(m); } catch { /* */ }
 }
-indexEntries.sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.file).localeCompare(String(a.file)));
-writeFileSync("matches/index.json", JSON.stringify({ updated: new Date().toISOString(), matches: indexEntries }, null, 2));
-console.log(`✓ index.json rebuilt — ${indexEntries.length} match(es).`);
+flagged.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+let md = `# Matches needing review\n\n_Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._\n\n`;
+md += flagged.length ? flagged.map(m => `### ${m.teamA} ${m.scoreA}–${m.scoreB} ${m.teamB} — ${m.date}\n${m.review.map(r => `- ${r}`).join("\n")}\n`).join("\n")
+  : `✓ Nothing flagged — all fetched matches look complete.\n`;
+writeFileSync("NEEDS_REVIEW.md", md);
 
+console.log(wrote ? `Done — ${wrote} new match file(s).` : "Done — nothing new this run.");
