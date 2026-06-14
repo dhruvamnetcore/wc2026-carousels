@@ -154,21 +154,60 @@ function mapStatName(name) {
   return null;
 }
 
+// provider name aliases → so "South Korea" matches "Korea Republic", etc.
+const NAME_ALIASES = {
+  "south korea": ["korea republic", "korea", "south korea"],
+  "north korea": ["korea dpr", "korea democratic"],
+  "czechia": ["czech republic", "czechia"],
+  "turkiye": ["turkey", "turkiye", "türkiye"],
+  "ivory coast": ["cote d ivoire", "côte d ivoire", "ivory coast"],
+  "usa": ["united states", "usa", "united states of america"],
+  "iran": ["iran", "ir iran", "iran islamic republic"],
+  "bosnia herzegovina": ["bosnia and herzegovina", "bosnia herzegovina"],
+  "cape verde": ["cabo verde", "cape verde"],
+  "dr congo": ["congo dr", "dr congo", "congo democratic republic"],
+};
+const stripAccents = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+function nameVariants(n) {
+  const c = canon(n);
+  const out = new Set([c, stripAccents(c)]);
+  for (const [k, list] of Object.entries(NAME_ALIASES)) {
+    if (c === k || stripAccents(c) === stripAccents(k) || list.some(x => stripAccents(canon(x)) === stripAccents(c))) {
+      out.add(k); list.forEach(x => { out.add(canon(x)); out.add(stripAccents(canon(x))); });
+    }
+  }
+  return [...out].filter(Boolean);
+}
+function teamsMatch(providerName, ourName) {
+  const p = stripAccents(canon(providerName)), vs = nameVariants(ourName);
+  return vs.some(v => { const sv = stripAccents(v); return p === sv || p.includes(sv) || sv.includes(p); });
+}
+
 async function apiFootballStats(ourA, ourB, date) {
   if (!AF_KEY) return { stats: {}, events: [] };
   try {
     const H = { "x-apisports-key": AF_KEY };
-    // find the fixture by date + team names
-    const day = date; // YYYY-MM-DD
-    const fr = await (await fetch(`https://v3.football.api-sports.io/fixtures?date=${day}`, { headers: H })).json();
-    const want = new Set([canon(ourA), canon(ourB)]);
-    const fx = (fr.response || []).find(f =>
-      [canon(f.teams?.home?.name), canon(f.teams?.away?.name)].every(t => [...want].some(w => t.includes(w) || w.includes(t))));
+    // Filter to the World Cup (league=1) for 2026 on the given date → tiny, exact set
+    // (scanning all of /fixtures?date= returns hundreds of games and misses the match).
+    let resp = [];
+    for (const url of [
+      `https://v3.football.api-sports.io/fixtures?league=1&season=2026&date=${date}`,
+      `https://v3.football.api-sports.io/fixtures?date=${date}`, // fallback if league id differs
+    ]) {
+      const r = await (await fetch(url, { headers: H })).json();
+      resp = r.response || [];
+      if (resp.length) {
+        const hit = resp.find(f => teamsMatch(f.teams?.home?.name, ourA) && teamsMatch(f.teams?.away?.name, ourB)
+          || teamsMatch(f.teams?.home?.name, ourB) && teamsMatch(f.teams?.away?.name, ourA));
+        if (hit) { resp = [hit]; break; }
+        resp = [];
+      }
+    }
+    const fx = resp[0];
     if (!fx) return { stats: {}, events: [] };
-    const homeIsA = [canon(fx.teams.home.name)].some(t => t.includes(canon(ourA)) || canon(ourA).includes(t));
+    const homeIsA = teamsMatch(fx.teams.home.name, ourA);
     const id = fx.fixture.id;
     const out = {};
-    // statistics
     try {
       const sr = await (await fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${id}`, { headers: H })).json();
       const arr = sr.response || [];
@@ -183,7 +222,6 @@ async function apiFootballStats(ourA, ourB, date) {
         }
       }
     } catch { /* stats may be uncovered for WC on free tier */ }
-    // events → goals + cards for the timeline
     const events = [];
     try {
       const er = await (await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${id}`, { headers: H })).json();
@@ -205,13 +243,12 @@ async function highlightlyStats(ourA, ourB, date) {
     const H = { "x-api-key": HL_KEY };
     const mr = await (await fetch(`https://soccer.highlightly.net/matches?date=${date}`, { headers: H })).json();
     const list = Array.isArray(mr) ? mr : (mr.data || mr.matches || []);
-    const want = new Set([canon(ourA), canon(ourB)]);
     const m = list.find(x => {
-      const h = canon(x.homeTeam?.name || x.home?.name || ""), a = canon(x.awayTeam?.name || x.away?.name || "");
-      return [h, a].every(t => [...want].some(w => t.includes(w) || w.includes(t)));
+      const h = x.homeTeam?.name || x.home?.name || "", a = x.awayTeam?.name || x.away?.name || "";
+      return (teamsMatch(h, ourA) && teamsMatch(a, ourB)) || (teamsMatch(h, ourB) && teamsMatch(a, ourA));
     });
     if (!m) return { stats: {}, events: [] };
-    const homeIsA = [canon(m.homeTeam?.name || m.home?.name || "")].some(t => t.includes(canon(ourA)) || canon(ourA).includes(t));
+    const homeIsA = teamsMatch(m.homeTeam?.name || m.home?.name || "", ourA);
     const id = m.id || m.matchId;
     const out = {};
     try {
