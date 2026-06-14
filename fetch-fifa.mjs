@@ -140,8 +140,8 @@ async function tsdbStats(ourA, ourB, date) {
    var; with no keys, the fetcher behaves exactly as before (TheSportsDB + manual).
      APIFOOTBALL_KEY  → api-sports.io  (reliable events/cards; partial WC stats)
      HIGHLIGHTLY_KEY  → highlightly.net (possession/passes/cards/shots)        ---- */
-const AF_KEY = process.env.APIFOOTBALL_KEY || "";
-const HL_KEY = process.env.HIGHLIGHTLY_KEY || "";
+const AF_KEY = process.env.APIFOOTBALL_KEY || process.env.API_FOOTBALL_KEY || "";
+const HL_KEY = process.env.HIGHLIGHTLY_KEY || process.env.HIGHLIGHTLY_API_KEY || "";
 
 // map provider stat names → our decided labels
 function mapStatName(name) {
@@ -297,7 +297,7 @@ async function processMatch(cal) {
   const date = String(cal.LocalDate || cal.Date || "").slice(0, 10);
   const label = `${ourA} vs ${ourB} (${date})`;
   const file = `matches/${date}-${slug(ourA)}-vs-${slug(ourB)}.json`;
-  if (existsSync(file)) { console.log(`• ${label}: already fetched`); return false; }
+  if (existsSync(file) && process.env.REFETCH !== "1") { console.log(`• ${label}: already fetched`); return false; }
 
   const d = await fifa(`live/football/${COMP}/${IdSeason}/${IdStage}/${IdMatch}?language=en`);
   const home = d.HomeTeam || {}, away = d.AwayTeam || {};
@@ -310,6 +310,13 @@ async function processMatch(cal) {
   const tsdb = await tsdbStats(ourA, ourB, date);
   const af = await apiFootballStats(ourA, ourB, date);
   const hl = await highlightlyStats(ourA, ourB, date);
+
+  // visible diagnostics in the Actions log so you can see if keys/data are working
+  console.log(`  stats sources for ${ourA} v ${ourB}: ` +
+    `keys[AF:${AF_KEY ? "set" : "—"} HL:${HL_KEY ? "set" : "—"}] ` +
+    `tsdb{${Object.keys(tsdb).join(",") || "∅"}} ` +
+    `apifootball{${Object.keys(af.stats).join(",") || "∅"}|ev:${af.events.length}} ` +
+    `highlightly{${Object.keys(hl.stats).join(",") || "∅"}}`);
 
   // If FIFA's bookings were sparse, supplement the timeline with API-Football
   // events (reliable for yellow/red cards). Dedupe by minute+team+type.
@@ -407,9 +414,12 @@ async function processMatch(cal) {
 
 /* ---------------- main ---------------- */
 mkdirSync("matches", { recursive: true });
-// FIFA's calendar wants day-aligned UTC boundaries (T00:00:00Z); cover yesterday→tomorrow
+// FIFA's calendar wants day-aligned UTC boundaries (T00:00:00Z).
+// Normal runs cover yesterday→tomorrow; set BACKFILL_DAYS to widen the lookback
+// (e.g. BACKFILL_DAYS=10 with REFETCH=1 to regenerate the last 10 days of matches).
 const dayStart = ms => new Date(ms).toISOString().slice(0, 10) + "T00:00:00Z";
-const from = dayStart(Date.now() - 24 * 3.6e6);
+const lookbackDays = Math.max(1, parseInt(process.env.BACKFILL_DAYS || "1", 10) || 1);
+const from = dayStart(Date.now() - lookbackDays * 24 * 3.6e6);
 const to = dayStart(Date.now() + 48 * 3.6e6);
 let wrote = 0;
 
