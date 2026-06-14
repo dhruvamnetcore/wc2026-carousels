@@ -237,41 +237,72 @@ async function apiFootballStats(ourA, ourB, date) {
   } catch { return { stats: {}, events: [] }; }
 }
 
+// Highlightly possession comes as a decimal (0.47); convert ≤1 values to a percentage.
+function hlVal(displayName, value) {
+  const v = parseFloat(String(value).replace("%", ""));
+  if (!isFinite(v)) return 0;
+  if (/possession/i.test(displayName) && v <= 1) return Math.round(v * 100);
+  return v;
+}
+function hlEventType(t) {
+  const s = String(t || "").toLowerCase();
+  if (s === "goal") return "goal";
+  if (s.includes("own")) return "og";
+  if (s.includes("missed pen")) return null;       // skip misses on the timeline
+  if (s.includes("penalty")) return "pen";
+  if (s.includes("yellow")) return "yellow";
+  if (s.includes("red")) return "red";
+  return null;                                       // substitutions etc. are ignored
+}
+
 async function highlightlyStats(ourA, ourB, date) {
   if (!HL_KEY) return { stats: {}, events: [], found: false };
   try {
-    const H = { "x-api-key": HL_KEY };
-    // World Cup 2026 is leagueId=1635 on Highlightly; filter to it so we get the right matches.
+    const H = { "X-RapidAPI-Key": HL_KEY, "x-api-key": HL_KEY };
+    // World Cup 2026 is leagueId=1635; filter to it to get the right matches for the date.
     const mr = await (await fetch(`https://soccer.highlightly.net/matches?leagueId=1635&date=${date}`, { headers: H })).json();
     const list = Array.isArray(mr) ? mr : (mr.data || mr.matches || []);
     const m = list.find(x => {
-      const h = x.homeTeam?.name || x.home?.name || x.homeTeamName || "", a = x.awayTeam?.name || x.away?.name || x.awayTeamName || "";
+      const h = x.homeTeam?.name || x.home?.name || "", a = x.awayTeam?.name || x.away?.name || "";
       return (teamsMatch(h, ourA) && teamsMatch(a, ourB)) || (teamsMatch(h, ourB) && teamsMatch(a, ourA));
     });
     if (!m) return { stats: {}, events: [], found: false };
-    const homeIsA = teamsMatch(m.homeTeam?.name || m.home?.name || m.homeTeamName || "", ourA);
+    const homeName = m.homeTeam?.name || m.home?.name || "";
+    const homeIsA = teamsMatch(homeName, ourA);
     const id = m.id || m.matchId;
     const out = {};
+    const events = [];
     try {
-      // stats endpoint takes matchId as a PATH parameter
-      const sr = await (await fetch(`https://soccer.highlightly.net/statistics/${id}`, { headers: H })).json();
-      // response is [homeTeam, awayTeam], each with a statistics list
-      const blocks = Array.isArray(sr) ? sr : (sr.statistics || sr.data || []);
+      // The match-detail endpoint carries `statistics` AND `events` directly.
+      const d = await (await fetch(`https://soccer.highlightly.net/matches/${id}`, { headers: H })).json();
+      const detail = Array.isArray(d) ? d[0] : (d.data ? (Array.isArray(d.data) ? d.data[0] : d.data) : d);
+      // statistics: [{team:{name}, statistics:[{value, displayName}]}, {...}]
+      const blocks = detail.statistics || [];
       if (Array.isArray(blocks) && blocks.length === 2) {
-        const homeStats = blocks[0].statistics || blocks[0].stats || [];
-        const awayStats = blocks[1].statistics || blocks[1].stats || [];
-        for (const stat of homeStats) {
-          const label = stat.type || stat.name || stat.displayName;
+        const b0Home = teamsMatch(blocks[0].team?.name || "", ourA) || canon(blocks[0].team?.name) === canon(homeName);
+        const homeBlock = b0Home ? blocks[0] : blocks[1];
+        const awayBlock = b0Home ? blocks[1] : blocks[0];
+        const homeList = homeBlock.statistics || [], awayList = awayBlock.statistics || [];
+        for (const stat of homeList) {
+          const label = stat.displayName || stat.name || stat.type;
           const k = mapStatName(label);
           if (!k) continue;
-          const hv = parseFloat(String(stat.value).replace("%", "")) || 0;
-          const match = awayStats.find(s => (s.type || s.name || s.displayName) === label);
-          const av = parseFloat(String(match?.value).replace("%", "")) || 0;
+          const hv = hlVal(label, stat.value);
+          const am = awayList.find(s => (s.displayName || s.name || s.type) === label);
+          const av = hlVal(label, am?.value);
           out[k] = homeIsA ? [hv, av] : [av, hv];
         }
       }
+      // events: [{team:{name}, time:"40", type:"Goal"/"Yellow Card"/..., player, assist}]
+      for (const ev of detail.events || []) {
+        const type = hlEventType(ev.type);
+        if (!type) continue;
+        const evIsHome = canon(ev.team?.name) === canon(homeName) || teamsMatch(ev.team?.name || "", ourA) === homeIsA;
+        const side = (evIsHome === homeIsA) ? "A" : "B";
+        events.push({ min: String(ev.time || "").replace(/[^0-9+]/g, ""), team: side, type, who: ev.player || "", what: ev.assist ? `Assist: ${ev.assist}` : "" });
+      }
     } catch { /* */ }
-    return { stats: out, events: [], found: true };
+    return { stats: out, events, found: true };
   } catch { return { stats: {}, events: [], found: false }; }
 }
 
@@ -359,11 +390,12 @@ async function processMatch(cal) {
     `apifootball{${Object.keys(af.stats).join(",") || "∅"}|ev:${af.events.length}} ` +
     `highlightly{${Object.keys(hl.stats).join(",") || "∅"}|found:${hl.found ? "y" : "n"}}`);
 
-  // If FIFA's bookings were sparse, supplement the timeline with API-Football
-  // events (reliable for yellow/red cards). Dedupe by minute+team+type.
-  if (af.events && af.events.length) {
+  // If FIFA's bookings were sparse, supplement the timeline with events from
+  // API-Football and Highlightly (reliable for cards). Dedupe by minute+team+type.
+  const extraEvents = [...(af.events || []), ...(hl.events || [])];
+  if (extraEvents.length) {
     const seen = new Set(moments.map(m => `${parseInt(m.min)||0}-${m.team}-${m.type}`));
-    for (const ev of af.events) {
+    for (const ev of extraEvents) {
       const key = `${parseInt(ev.min)||0}-${ev.team}-${ev.type}`;
       if (!seen.has(key)) { moments.push(ev); seen.add(key); }
     }
