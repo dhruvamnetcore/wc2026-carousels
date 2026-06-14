@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: "*/10 * * * *"   # every 10 min (GitHub cron is best-effort; a reliable external pinger is better)
   workflow_dispatch:        # manual "Run workflow" button for testing
+    inputs:
+      refetch:
+        description: "Re-fetch existing matches (overwrite with fresh data)"
+        type: boolean
+        default: false
+      backfill_days:
+        description: "How many days back to scan (default 1)"
+        default: "1"
 
 permissions:
   contents: write
@@ -25,7 +33,14 @@ jobs:
       - name: 1. Fetch finished matches
         run: node fetch-match.mjs
         env:
+          # API-Football: the fetcher accepts either spelling, both are passed
+          APIFOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          # Highlightly: this was MISSING before — the stats source never had its key
+          HIGHLIGHTLY_KEY: ${{ secrets.HIGHLIGHTLY_KEY }}
+          # one-time backfill controls (from the Run-workflow button)
+          REFETCH: ${{ github.event.inputs.refetch == 'true' && '1' || '' }}
+          BACKFILL_DAYS: ${{ github.event.inputs.backfill_days || '1' }}
 
       - name: 2. Install renderer (Puppeteer)
         run: npm install
