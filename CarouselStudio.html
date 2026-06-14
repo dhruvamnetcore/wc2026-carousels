@@ -53,7 +53,8 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
   .layout{grid-template-columns:minmax(0,1fr) 380px;align-items:start;}
   .col-prev{position:sticky;top:72px;max-height:calc(100vh - 88px);overflow-y:auto;padding-right:4px;}
   .col-prev .track{flex-direction:column;overflow:visible;}
-  .col-prev .slide-outer{width:100%;}
+  .col-prev .slide-cell{width:100%;}
+  .col-prev .slide-cell .slide-outer{width:100%;}
 }
 
 /* ---------- panels ---------- */
@@ -150,6 +151,15 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 @media (max-width:680px){
   .mrow{grid-template-columns:56px 76px 1fr 34px;}
   .mrow .mwide{grid-column:1/-1;}
+  /* phone ergonomics: bigger previews + finger-friendly controls */
+  .slide-cell .slide-outer{width:84vw;}
+  .track{gap:14px;padding-bottom:18px;scroll-padding:0 8vw;}
+  .wrap{padding-top:14px;}
+  .panel{padding:16px;border-radius:14px;}
+  input,select,button{min-height:42px;font-size:15px;}
+  .chip{min-height:38px;}
+  #export{width:100%;}
+  .row{gap:14px;}
 }
 
 /* ---------- preview rail ---------- */
@@ -169,11 +179,25 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
    exported at scale 1 → exact 1080x1350 PNG. Nothing can overflow.
    ===================================================================== */
 .slide-outer{flex:0 0 auto;width:min(300px,78vw);aspect-ratio:4/5;border-radius:16px;overflow:hidden;scroll-snap-align:start;position:relative;border:1px solid var(--line);box-shadow:0 20px 44px -26px rgba(0,0,0,.95);counter-increment:slide;transition:transform .2s, box-shadow .2s;}
+.slide-cell{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start;}
+.slide-cell .slide-outer{width:min(300px,78vw);}
+.slide-actions{display:flex;gap:8px;}
+.match-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin:6px 0 2px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--well);}
+.match-list.hidden{display:none;}
+.match-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:9px;padding:9px 11px;cursor:pointer;color:var(--ink);font-size:14px;font-family:inherit;transition:.12s;}
+.match-item:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%, transparent);}
+.match-item .mi-score{font-weight:800;font-variant-numeric:tabular-nums;}
+.match-item .mi-meta{margin-left:auto;font-size:11px;color:var(--mut);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.match-item .mi-live{color:#ff3b3b;font-weight:800;font-size:11px;}
+.mini-act{flex:1;background:var(--well);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 8px;font-size:13px;font-weight:700;cursor:pointer;min-height:40px;transition:.15s;}
+.mini-act:hover{border-color:var(--acc);color:var(--acc);}
+.mini-act:active{transform:scale(.97);}
 .slide-outer:hover{transform:translateY(-3px);box-shadow:0 26px 50px -26px rgba(0,0,0,1);}
 .slide-outer::after{content:"0" counter(slide);position:absolute;top:9px;left:9px;z-index:5;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;color:#fff;background:rgba(8,8,12,.6);border:1px solid rgba(255,255,255,.14);padding:2px 7px;border-radius:6px;pointer-events:none;}
 .art{--u:1px;width:1080px;height:1350px;position:relative;overflow:hidden;background:#0c0c12;font-family:'Archivo',sans-serif;transform-origin:top left;}
 .art .layer{position:absolute;inset:0;}
 .art .pat{position:absolute;inset:0;opacity:.1;pointer-events:none;}
+.art .ovl{position:absolute;inset:0;pointer-events:none;z-index:4;}
 .art .grain{position:absolute;inset:0;opacity:.08;pointer-events:none;background-size:calc(var(--u)*220) calc(var(--u)*220);background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" stitchTiles="stitch"/></filter><rect width="220" height="220" filter="url(%23n)" opacity="0.65"/></svg>');}
 .art .ftr{position:absolute;left:0;right:0;bottom:0;height:calc(var(--u)*86);display:flex;align-items:center;justify-content:space-between;padding:0 calc(var(--u)*56);background:rgba(8,8,12,.62);z-index:9;}
 .art .ftr .hdl{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);letter-spacing:calc(var(--u)*3);color:#fff;}
@@ -231,6 +255,10 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .tlv-txt .who{font-size:calc(var(--u)*36);font-weight:800;color:#fff;text-transform:uppercase;line-height:1.08;letter-spacing:calc(var(--u)*.5);}
 .tlv-txt .what{font-size:calc(var(--u)*24);color:rgba(255,255,255,.7);line-height:1.2;margin-top:calc(var(--u)*4);}
 .tlv-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*17);letter-spacing:calc(var(--u)*1.5);padding:calc(var(--u)*2) calc(var(--u)*9);border-radius:calc(var(--u)*4);background:rgba(255,255,255,.16);color:#fff;margin:0 calc(var(--u)*8);vertical-align:middle;}
+.tlv-tag.t-OG{background:rgba(248,113,113,.28);color:#fecaca;}
+.tlv-tag.t-RED{background:rgba(248,113,113,.28);color:#fecaca;}
+.tlv-tag.t-YEL{background:rgba(250,204,21,.30);color:#fde68a;}
+.tlv-tag.t-PEN{background:rgba(96,165,250,.28);color:#bfdbfe;}
 .tlv.compact{gap:calc(var(--u)*16);}
 .tlv.compact .tlv-row{min-height:calc(var(--u)*58);}
 .tlv.compact .tlv-min{font-size:calc(var(--u)*30);}
@@ -239,12 +267,13 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .tlv.compact .tlv-txt .what{font-size:calc(var(--u)*20);}
 .tlv-empty{font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);color:rgba(255,255,255,.5);text-align:center;}
 /* flag band at the top of the timeline — labels which side is which team */
-.tlv-teams{position:absolute;top:calc(var(--u)*238);left:calc(var(--u)*56);right:calc(var(--u)*56);display:flex;align-items:center;justify-content:space-between;gap:calc(var(--u)*20);z-index:6;}
-.tlv-teams .side{display:flex;align-items:center;gap:calc(var(--u)*16);min-width:0;max-width:calc(var(--u)*360);}
-.tlv-teams .side.r{flex-direction:row-reverse;}
-.tlv-teams .tnm{font-family:'Anton',sans-serif;font-size:calc(var(--u)*30);color:#fff;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:calc(var(--u)*.5);}
+.tlv-teams{position:absolute;top:calc(var(--u)*238);left:calc(var(--u)*56);right:calc(var(--u)*56);display:flex;align-items:center;gap:calc(var(--u)*20);z-index:6;}
+.tlv-teams .side{display:flex;align-items:center;gap:calc(var(--u)*16);min-width:0;flex:1 1 0;}
+.tlv-teams .side.l{justify-content:flex-start;}
+.tlv-teams .side.r{flex-direction:row-reverse;justify-content:flex-start;}
+.tlv-teams .tnm{font-family:'Anton',sans-serif;font-size:calc(var(--u)*30);color:#fff;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:calc(var(--u)*.5);min-width:0;flex:0 1 auto;}
 .tlv-fl{height:calc(var(--u)*48);width:auto;flex:0 0 auto;border-radius:calc(var(--u)*7);border:calc(var(--u)*3) solid rgba(255,255,255,.82);box-shadow:0 calc(var(--u)*4) calc(var(--u)*14) rgba(0,0,0,.35);}
-.tlv-score{font-family:'Anton',sans-serif;font-size:calc(var(--u)*46);color:#fff;flex:0 0 auto;letter-spacing:calc(var(--u)*2);}
+.tlv-score{font-family:'Anton',sans-serif;font-size:calc(var(--u)*46);color:#fff;flex:0 0 auto;letter-spacing:calc(var(--u)*2);text-align:center;white-space:nowrap;}
 .tlv-score i{font-style:normal;opacity:.5;margin:0 calc(var(--u)*10);}
 
 /* Stats */
@@ -311,12 +340,27 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
       </div>
       <button class="ghost" id="loadLatest">⚡ Load latest match</button>
     </div>
+    <div class="row" style="align-items:flex-end;">
+      <button class="ghost" id="browseMatches">📋 Browse all matches</button>
+      <div style="flex:1;min-width:200px;">
+        <span class="lbl">…or load a specific match file</span>
+        <input id="matchFile" type="text" placeholder="e.g. brazil-vs-morocco  (or full .json path)">
+      </div>
+      <button class="ghost" id="loadNamed">Load this match</button>
+    </div>
+    <div id="matchList" class="match-list hidden"></div>
+    <div class="row" style="align-items:flex-end;">
+      <button class="ghost" id="pickFolder">📁 Choose save folder (once)</button>
+      <button class="ghost" id="saveToFolder">💾 Save this match to its folder</button>
+      <span class="lbl" id="folderName" style="align-self:center;"></span>
+    </div>
     <div class="row">
       <div>
         <span class="lbl">Import overnight match JSON</span>
         <input id="importJson" type="file" accept=".json,application/json" style="width:auto;background:none;border:none;padding:0;color:#8b8f99;font-size:12px;">
       </div>
       <div><span class="lbl">Pattern overlay</span><div class="chips" id="patChips"></div></div>
+      <div><span class="lbl">Finish overlay</span><div class="chips" id="ovlChips"></div></div>
       <div><span class="lbl">Grain texture</span><div class="chips" id="grainChips"></div></div>
     </div>
   </div>
@@ -478,19 +522,58 @@ function teamTheme(t){
     ink:inkOn(p),
     gradient:`linear-gradient(150deg, ${mix(p,'#000000',0.18)} 0%, ${p} 48%, ${mix(p,a,0.4)} 100%)`,
     pattern:s,                                        // pattern overlay color
+    seam:1,            // seam-thickness multiplier; bumped when a clash is deepened
+    adapted:false,     // true when this side was shifted/deepened to break a clash
   };
 }
 
+/* Perceptual-ish RGB distance (0 = identical, ~441 = black/white). */
+function colorDist(c1,c2){const a=hx(c1),b=hx(c2);
+  const dr=a[0]-b[0],dg=a[1]-b[1],db=a[2]-b[2];
+  // luma-weighted: eyes weight green most, blue least
+  return Math.sqrt(2*dr*dr+4*dg*dg+3*db*db)/Math.sqrt(9);}
+const CLASH_MIN=70;    // below this, two fills read as "the same colour" → clash
+const SHIFT_MIN=85;    // a candidate secondary must clear this vs the opponent to be used
+// avoid shifting onto a near-white/near-black secondary that would vanish on the slide
+function usableShift(c){const L=lum(c);return L>0.06&&L<0.92;}
+
+/* Rebuild a theme around a different base colour while keeping the team's own palette. */
+function reTheme(base,t,opts){opts=opts||{};
+  const a=t.accent;
+  return {primary:base, secondary:t.secondary, accent:a,
+    deep:mix(base,'#0a0a10',0.62), ink:inkOn(base),
+    gradient:`linear-gradient(150deg, ${mix(base,'#000000',0.18)} 0%, ${base} 48%, ${mix(base,a,0.4)} 100%)`,
+    pattern:t.secondary, seam:opts.seam||1, adapted:true};
+}
+
+/* If A and B read as the same colour, adapt the side with the stronger 2nd colour.
+   Hybrid: prefer a shift to that side's true secondary; if no usable secondary,
+   keep both primaries but deepen the adapting side and thicken the seam. */
+function resolveClash(A,B){
+  if(colorDist(A.primary,B.primary)>=CLASH_MIN)return [A,B];   // no clash, untouched
+  // which side has the stronger (more distinct) secondary to offer?
+  const aSecGap=usableShift(A.secondary)?colorDist(A.secondary,B.primary):-1;
+  const bSecGap=usableShift(B.secondary)?colorDist(B.secondary,A.primary):-1;
+  const adaptA=aSecGap>bSecGap;        // the team whose secondary separates best adapts
+  if(adaptA){
+    if(aSecGap>=SHIFT_MIN)return [reTheme(A.secondary,A),B];   // A → its true 2nd colour
+    return [reTheme(mix(A.primary,'#0a0a10',0.45),A,{seam:2.4}),B]; // deepen A + strong seam
+  }else{
+    if(bSecGap>=SHIFT_MIN)return [A,reTheme(B.secondary,B)];
+    return [A,reTheme(mix(B.primary,'#0a0a10',0.45),B,{seam:2.4})];
+  }
+}
+
 /* ---------- state ---------- */
-const SLIDE_DEFS={cover:"Cover (FT scoreline)",moments:"Key Moments timeline",stats:"Match Stats",motm:"MOTM player card"};
+const SLIDE_DEFS={cover:"Cover (FT scoreline)",moments:"In the Mins timeline",stats:"Match Stats",motm:"MOTM player card"};
 const S={
   teamA:"Argentina", teamB:"Mexico",
-  scoreA:2, scoreB:1, venue:"", date:"", comp:"International Friendly", handle:"@fwc_2k26",
-  pattern:"stripes", grain:true, motmTint:false,
+  scoreA:2, scoreB:1, venue:"", date:"", comp:"Group C · Match 1", handle:"@fwc_2k26",
+  pattern:"stripes", overlay:"none", grain:true, motmTint:false,
   order:["cover","moments","stats","motm"],
   enabled:{cover:true,moments:true,stats:true,motm:true},
   moments:[{min:"23",team:"A",type:"goal",who:"",what:""}],
-  stats:{Possession:[55,45],Shots:[14,9],"On target":[6,3],xG:[1.8,0.9],Corners:[7,4]},
+  stats:{Goals:[2,1],"Shots on target":[6,3],Possession:[55,45],"Passes completed":[412,388],Offsides:[2,4]},
   motm:{name:"",pos:"CAM",rate:"9.2",team:"A",club:"",league:"",number:"",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null},
 };
 const team=n=>TEAMS.find(t=>t.n===n)||TEAMS[0];
@@ -516,7 +599,8 @@ function chipToggle(el,opts,get,set){
     el.appendChild(b);
   });
 }
-chipToggle($("patChips"),[{v:"stripes",label:"Diagonal stripes"},{v:"halftone",label:"Halftone dots"}],()=>S.pattern,v=>S.pattern=v);
+chipToggle($("patChips"),[{v:"stripes",label:"Diagonal stripes"},{v:"halftone",label:"Halftone dots"},{v:"grid",label:"Grid"},{v:"chevron",label:"Chevron"},{v:"none",label:"None"}],()=>S.pattern,v=>S.pattern=v);
+chipToggle($("ovlChips"),[{v:"none",label:"None"},{v:"vignette",label:"Vignette"},{v:"topglow",label:"Top glow"},{v:"bottomshade",label:"Bottom shade"}],()=>S.overlay,v=>S.overlay=v);
 chipToggle($("grainChips"),[{v:true,label:"Grain on"},{v:false,label:"Grain off"}],()=>S.grain,v=>S.grain=v);
 
 /* ---------- editor: slide cards (include + drag/arrow reorder) ---------- */
@@ -550,7 +634,7 @@ function renderSlideCards(){
 renderSlideCards();
 
 /* ---------- editor: key moments ---------- */
-const TYPES={goal:{label:"Goal ⚽",ico:"⚽",tag:""},pen:{label:"Penalty ⚽",ico:"⚽",tag:"PEN"},red:{label:"Red card 🟥",ico:"🟥",tag:"RED"}};
+const TYPES={goal:{label:"Goal ⚽",ico:"⚽",tag:""},og:{label:"Own goal ⚽",ico:"⚽",tag:"OG"},pen:{label:"Penalty ⚽",ico:"⚽",tag:"PEN"},yellow:{label:"Yellow card 🟨",ico:"🟨",tag:"YEL"},red:{label:"Red card 🟥",ico:"🟥",tag:"RED"}};
 function renderMoments(){
   const box=$("mrows");box.innerHTML="";
   S.moments.forEach((m,i)=>{
@@ -588,6 +672,7 @@ function moveStat(k,dir){ // reorder a stat row up (-1) or down (+1)
 function renderStats(){
   const box=$("strows");box.innerHTML="";
   Object.keys(S.stats).forEach((k,i,arr)=>{
+    if(!Array.isArray(S.stats[k]))S.stats[k]=[0,0];
     const row=document.createElement("div");row.className="strow";
     row.innerHTML=`<input type="number" step="any" min="0" value="${S.stats[k][0]}">`
       +`<input class="stname" type="text" list="statpresets" value="${esc(k)}" placeholder="stat name">`
@@ -612,7 +697,7 @@ function renderStats(){
 }
 $("addStat").onclick=()=>{
   // add the first common stat you don't already have, else a numbered blank
-  const presets=["Possession","Shots","On target","xG","Corners","Fouls","Free kicks","Passes","Offsides","Yellow cards","Red cards","Saves","Tackles"];
+  const presets=["Goals","Shots on target","Possession","Passes completed","Offsides","Shots","xG","Corners","Fouls","Free kicks","Yellow cards","Red cards","Saves","Tackles"];
   let name=presets.find(p=>!(p in S.stats));
   if(!name){let i=1;while(("Stat "+i) in S.stats)i++;name="Stat "+i;}
   S.stats[name]=[0,0];renderStats();drawOutput();
@@ -639,12 +724,36 @@ $("pmClear").onclick=()=>{S.motm.img=null;$("pmPhoto").value="";$("pmThumb").cla
    flag colors), optional grain, and the footer strip (@handle + wordmark)
    ===================================================================== */
 function patStyle(color){
-  return S.pattern==="halftone"
-    ? `background-image:radial-gradient(${color} 2.4px, transparent 2.6px);background-size:28px 28px;`
-    : `background-image:repeating-linear-gradient(135deg, ${color} 0px, ${color} 7px, transparent 7px, transparent 32px);`;
+  switch(S.pattern){
+    case "halftone":
+      return `background-image:radial-gradient(${color} 2.4px, transparent 2.6px);background-size:28px 28px;`;
+    case "grid":
+      return `background-image:linear-gradient(${color} 1.4px,transparent 1.4px),linear-gradient(90deg,${color} 1.4px,transparent 1.4px);background-size:46px 46px;`;
+    case "chevron":
+      return `background-image:repeating-linear-gradient(135deg,${color} 0 8px,transparent 8px 22px),repeating-linear-gradient(45deg,${color} 0 8px,transparent 8px 22px);background-size:44px 44px;`;
+    case "none":
+      return `background-image:none;`;
+    case "stripes":
+    default:
+      return `background-image:repeating-linear-gradient(135deg, ${color} 0px, ${color} 7px, transparent 7px, transparent 32px);`;
+  }
+}
+/* Full-slide finishing wash, applied above pattern + grain. */
+function overlayDiv(){
+  switch(S.overlay){
+    case "vignette":
+      return `<div class="ovl" style="background:radial-gradient(120% 80% at 50% 42%, transparent 52%, rgba(5,6,10,.62) 100%);"></div>`;
+    case "topglow":
+      return `<div class="ovl" style="background:linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 30%);"></div>`;
+    case "bottomshade":
+      return `<div class="ovl" style="background:linear-gradient(0deg, rgba(5,6,10,.66) 0%, transparent 34%);"></div>`;
+    case "none":
+    default:
+      return "";
+  }
 }
 function footer(){
-  return `<div class="ftr"><span class="hdl">${esc(S.handle)}</span><span class="wm">MATCHDAY</span></div>`;
+  return `<div class="ftr"><span class="hdl">${esc(S.handle)}</span><span class="wm">WORLD CUP</span></div>`;
 }
 function grain(){return S.grain?`<div class="grain"></div>`:"";}
 /* Flags: fetch once → embed as data URL (guaranteed display + reliable export).
@@ -681,21 +790,30 @@ function dualBg(A,B){ // shared body-slide background: A dominates top, B bottom
     <div class="pat" style="${patStyle(mix(A.secondary,B.secondary,0.5))}"></div>`;
 }
 function slHead(title,A,B){
+  const seam=Math.max(A.seam||1,B.seam||1);
+  const rule=seam>1.5
+    ? `background:linear-gradient(90deg, ${A.primary}, #ffffff 50%, ${B.primary});height:calc(var(--u)*7);`
+    : `background:linear-gradient(90deg, ${A.primary}, ${B.primary});`;
   return `<div class="sl-head"><span class="kick">${title}</span>
-    <div class="subline">${esc(team(S.teamA).n)} <span style="opacity:.5">vs</span> ${esc(team(S.teamB).n)} · ${esc(S.comp)}</div>
-    <div class="sl-rule" style="background:linear-gradient(90deg, ${A.primary}, ${B.primary});"></div></div>`;
+    <div class="subline">${esc(team(S.teamA).n)} <span style="opacity:.5">vs</span> ${esc(team(S.teamB).n)}</div>
+    <div class="sl-rule" style="${rule}"></div></div>`;
 }
 
 function buildCover(A,B){
   const tA=team(S.teamA),tB=team(S.teamB);
   const fs=n=>n.length>16?56:n.length>12?74:96; // long names step down so name+flag always fit
+  const seam=Math.max(A.seam,B.seam);
+  const seamBand=seam>1.5
+    ? `<div class="layer" style="background:#ffffff;clip-path:polygon(0 65.4%,100% 33.4%,100% 36.1%,0 68.1%);opacity:.92;"></div>
+       <div class="layer" style="background:linear-gradient(90deg, ${A.primary}, ${B.primary});clip-path:polygon(0 64.6%,100% 32.6%,100% 36.9%,0 68.9%);opacity:.5;"></div>`
+    : `<div class="layer" style="background:linear-gradient(90deg, ${A.primary}, ${mix(A.primary,B.primary,0.5)}, ${B.primary});clip-path:polygon(0 65%,100% 33%,100% 36.5%,0 68.5%);"></div>`;
   return `<div class="art">
     <div class="layer" style="background:${A.gradient};"></div>
     <div class="layer" style="background:${B.gradient};clip-path:polygon(0 100%,100% 100%,100% 34%,0 66%);"></div>
-    <div class="layer" style="background:linear-gradient(90deg, ${A.primary}, ${mix(A.primary,B.primary,0.5)}, ${B.primary});clip-path:polygon(0 65%,100% 33%,100% 36.5%,0 68.5%);"></div>
+    ${seamBand}
     <div class="pat" style="${patStyle(A.secondary)};clip-path:polygon(0 0,100% 0,100% 34%,0 66%);"></div>
     <div class="pat" style="${patStyle(B.secondary)};clip-path:polygon(0 100%,100% 100%,100% 34%,0 66%);"></div>
-    ${grain()}
+    ${grain()}${overlayDiv()}
     <div class="cv-ftbadge">FT</div>
     <div class="cv-comp">${esc(S.comp)}</div>
     <div class="cv-teamA" style="color:${A.ink};font-size:calc(var(--u)*${fs(tA.n)});text-shadow:0 3px 14px ${alpha('#000000',0.25)};">${flagImg(tA)}<span>${esc(tA.n)}</span></div>
@@ -715,9 +833,9 @@ function buildMoments(A,B){
     const isA=m.team!=="B";
     const T=isA?A:B, ty=TYPES[m.type]||TYPES.goal;
     const node=`<div class="tlv-node" style="background:${T.primary};"></div>`;
-    const txt=`<div class="tlv-txt"><div class="who">${esc(m.who)||"—"}${ty.tag?`<span class="tlv-tag">${ty.tag}</span>`:""}</div>${m.what?`<div class="what">${esc(m.what)}</div>`:""}</div>`;
+    const txt=`<div class="tlv-txt"><div class="who">${esc(m.who)||"—"}${ty.tag?`<span class="tlv-tag t-${ty.tag}">${ty.tag}</span>`:""}</div>${m.what?`<div class="what">${esc(m.what)}</div>`:""}</div>`;
     const ico=`<div class="tlv-ico">${ty.ico}</div>`;
-    const min=`<div class="tlv-min">${esc(m.min)}'</div>`;
+    const min=`<div class="tlv-min">${esc(m.min)}</div>`;
     const body=isA
       ? `<div class="tlv-half l">${txt}${ico}${min}</div><div class="tlv-half r"></div>`
       : `<div class="tlv-half l"></div><div class="tlv-half r">${min}${ico}${txt}</div>`;
@@ -729,8 +847,8 @@ function buildMoments(A,B){
     <div class="tlv-score">${esc(S.scoreA)}<i>–</i>${esc(S.scoreB)}</div>
     <div class="side r"><span class="tnm">${esc(tB.n)}</span>${flagImg(tB,"tlv-fl")}</div>
   </div>`;
-  return `<div class="art">${dualBg(A,B)}${grain()}
-    ${slHead("KEY MOMENTS",A,B)}
+  return `<div class="art">${dualBg(A,B)}${grain()}${overlayDiv()}
+    ${slHead("IN THE MINS",A,B)}
     ${teamsHead}
     <div class="tlv${compact?" compact":""}">${rows}</div>
     ${footer()}
@@ -739,7 +857,7 @@ function buildMoments(A,B){
 
 function buildStats(A,B){
   const possBlock=()=>{
-    const poss=S.stats.Possession||[50,50], pTot=(poss[0]+poss[1])||1;
+    const poss=Array.isArray(S.stats.Possession)?S.stats.Possession:[50,50], pTot=(poss[0]+poss[1])||1;
     return `<div>
         <div class="st-lbl">Possession</div>
         <div class="poss">
@@ -749,7 +867,8 @@ function buildStats(A,B){
       </div>`;
   };
   const barBlock=k=>{
-    const [a,b]=S.stats[k], mx=Math.max(a,b,0.001);
+    const v=Array.isArray(S.stats[k])?S.stats[k]:[0,0];
+    const a=+v[0]||0, b=+v[1]||0, mx=Math.max(a,b,0.001);
     return `<div>
       <div class="st-lbl">${esc(k)}</div>
       <div class="st-row">
@@ -765,7 +884,7 @@ function buildStats(A,B){
   // render every stat in the editor's order (Possession keeps its bar wherever you place it)
   const blocks=Object.keys(S.stats).map(k=>
     (k==="Possession"&&Array.isArray(S.stats.Possession))?possBlock():barBlock(k)).join("");
-  return `<div class="art">${dualBg(A,B)}${grain()}
+  return `<div class="art">${dualBg(A,B)}${grain()}${overlayDiv()}
     ${slHead("MATCH STATS",A,B)}
     <div class="stats">${blocks}</div>
     ${footer()}
@@ -789,7 +908,7 @@ function buildMotm(A,B){
   return `<div class="art">
     <div class="layer" style="background:linear-gradient(170deg, ${T.deep} 0%, ${mix(T.primary,'#0a0a10',0.42)} 60%, ${mix(other.primary,'#0a0a10',0.7)} 100%);"></div>
     <div class="pat" style="${patStyle(T.secondary)}"></div>
-    ${grain()}
+    ${grain()}${overlayDiv()}
     ${slHead("PLAYER OF THE MATCH",A,B)}
     <div class="motm-card" style="background:${T.gradient};border:6px solid ${alpha(T.secondary,.85)};box-shadow:0 30px 80px rgba(0,0,0,.5);color:${T.ink};">
       <div class="motm-top">
@@ -817,7 +936,8 @@ function fitScale(){
 window.addEventListener("resize",fitScale);
 
 function drawOutput(){
-  const A=teamTheme(team(S.teamA)), B=teamTheme(team(S.teamB));
+  let A=teamTheme(team(S.teamA)), B=teamTheme(team(S.teamB));
+  [A,B]=resolveClash(A,B);   // break red-on-red (and any same-colour) clashes
   // the editor chrome follows the match: team colors + live scoreboard in the app bar
   const rs=document.documentElement.style;
   rs.setProperty("--ta",A.primary);rs.setProperty("--tb",B.primary);
@@ -826,11 +946,20 @@ function drawOutput(){
     `<span class="sb-score">${esc(S.scoreA)}<i>–</i>${esc(S.scoreB)}</span>`+
     `<span class="sb-team b">${esc(team(S.teamB).n)}</span>`;
   const track=$("track");track.innerHTML="";
-  S.order.filter(k=>S.enabled[k]).forEach(k=>{
+  const activeKeys=S.order.filter(k=>S.enabled[k]);
+  activeKeys.forEach((k,idx)=>{
     const outer=document.createElement("div");
     outer.className="slide-outer";
     outer.innerHTML=BUILDERS[k](A,B);
-    track.appendChild(outer);
+    const bar=document.createElement("div");
+    bar.className="slide-actions";
+    bar.innerHTML=`<button class="mini-act" data-act="save">⬇ Save</button>`+
+      (navigator.share?`<button class="mini-act" data-act="share">⤴ Share</button>`:"");
+    bar.querySelectorAll("button").forEach(b=>b.onclick=()=>exportOne(idx,b.dataset.act,SLIDE_DEFS[k]));
+    const cell=document.createElement("div");
+    cell.className="slide-cell";
+    cell.appendChild(outer);cell.appendChild(bar);
+    track.appendChild(cell);
   });
   fitScale();
 }
@@ -858,13 +987,68 @@ function applyMatchJSON(d){
   if(d.date)S.date=d.date;
   if(d.comp)S.comp=d.comp;
   if(d.handle)S.handle=String(d.handle);
-  if(Array.isArray(d.moments))S.moments=d.moments.slice(0,10).map(m=>({min:String(m.min??""),team:m.team==="B"?"B":"A",type:TYPES[m.type]?m.type:"goal",who:m.who||"",what:m.what||""}));
+  if(Array.isArray(d.moments))S.moments=d.moments.slice(0,10).map(m=>{
+    // accept common field aliases from different data sources
+    const min=m.min??m.minute??m.time??m.clock??"";
+    const teamRaw=String(m.team??m.side??m.for??"A");
+    const team=(teamRaw==="B"||teamRaw==="b"||teamRaw==="away"||teamRaw==="2")?"B":"A";
+    const who=m.who??m.player??m.scorer??m.name??"";
+    const what=m.what??m.detail??m.desc??m.note??m.assist??"";
+    // normalize the event type from many possible spellings
+    let raw=String(m.type??m.event??m.kind??m.card??"goal").toLowerCase().replace(/[\s_-]/g,"");
+    const map={
+      owngoal:"og",og:"og",ownsgoal:"og",
+      penalty:"pen",pen:"pen",penaltygoal:"pen",
+      yellow:"yellow",yellowcard:"yellow",booking:"yellow",booked:"yellow",caution:"yellow",yel:"yellow",yc:"yellow",
+      red:"red",redcard:"red",sentoff:"red",dismissal:"red",secondyellow:"red",red2:"red",ry:"red",rc:"red",
+      goal:"goal"
+    };
+    const type=map[raw]||(TYPES[raw]?raw:"goal");
+    return {min:String(min),team,type,who:String(who),what:String(what)};
+  });
   // rebuild stats from ONLY the keys the file provides, so a source without
-  // (say) xG/possession/corners doesn't fall back to the demo defaults
+  // (say) xG/possession/corners doesn't fall back to the demo defaults.
+  // Accept three value shapes per stat so nothing gets silently dropped:
+  //   [15,8]  |  {home:15,away:8} (or h/a)  |  "15-8" / "15:8" / "15,8"
   if(d.stats&&typeof d.stats==="object"){
-    const ORD=["Possession","Shots","On target","xG","Corners"];
-    const keys=[...ORD.filter(k=>Array.isArray(d.stats[k])),...Object.keys(d.stats).filter(k=>!ORD.includes(k)&&Array.isArray(d.stats[k]))];
-    if(keys.length){const ns={};keys.forEach(k=>{ns[k]=[parseFloat(d.stats[k][0])||0,parseFloat(d.stats[k][1])||0];});S.stats=ns;}
+    const pair=v=>{
+      if(Array.isArray(v))return [parseFloat(v[0])||0,parseFloat(v[1])||0];
+      if(v&&typeof v==="object"){
+        const h=v.home??v.h??v.a??v.A, aw=v.away??v.a2??v.b??v.B;
+        const hh=parseFloat(h), aa=parseFloat(aw);
+        if(isFinite(hh)||isFinite(aa))return [hh||0,aa||0];
+        return null;
+      }
+      if(typeof v==="string"){
+        const m=v.split(/[-:,/|]/).map(x=>parseFloat(x.trim()));
+        if(m.length>=2&&(isFinite(m[0])||isFinite(m[1])))return [m[0]||0,m[1]||0];
+        return null;
+      }
+      if(typeof v==="number")return [v,0];
+      return null;
+    };
+    // Canonical fixed set, with common aliases from various data sources
+    const CANON=[
+      {name:"Goals",aliases:["goals","goal","score","scored"]},
+      {name:"Shots on target",aliases:["shotsontarget","shotontarget","ontarget","sot","shotsongoal"]},
+      {name:"Possession",aliases:["possession","poss","ballpossession"]},
+      {name:"Passes completed",aliases:["passescompleted","passcompleted","completedpasses","passesaccurate","accuratepasses","passes"]},
+      {name:"Offsides",aliases:["offsides","offside","offsidescommitted"]}
+    ];
+    const norm=k=>String(k).toLowerCase().replace(/[\s_\-%.]/g,"");
+    const lookup={};
+    CANON.forEach(c=>{lookup[norm(c.name)]=c.name;c.aliases.forEach(a=>lookup[norm(a)]=c.name);});
+    // build a canonicalized stat object, preferring canonical order, then any extras
+    const incoming={};
+    Object.keys(d.stats).forEach(k=>{
+      const v=pair(d.stats[k]);if(v===null)return;
+      const canonical=lookup[norm(k)]||k;   // map known aliases, keep unknown names as-is
+      if(!(canonical in incoming))incoming[canonical]=v;
+    });
+    const canonOrder=CANON.map(c=>c.name);
+    const keys=[...canonOrder.filter(k=>k in incoming),...Object.keys(incoming).filter(k=>!canonOrder.includes(k))];
+    if(keys.length){const ns={};keys.forEach(k=>{ns[k]=incoming[k];});S.stats=ns;}
+    else warn.push("none of the stats in this file had a readable home/away value");
   }
   if(d.motm){
     const p=d.motm;
@@ -882,13 +1066,8 @@ function applyMatchJSON(d){
       S.motm.chips=arr;
     }
   }
-  // sync every editor field to the imported state
-  fillTeamSelect($("teamA"),S.teamA);fillTeamSelect($("teamB"),S.teamB);
-  $("scoreA").value=S.scoreA;$("scoreB").value=S.scoreB;$("venue").value=S.venue;
-  $("mdate").value=S.date||"";$("comp").value=S.comp;$("handle").value=S.handle;
-  $("pmName").value=S.motm.name;$("pmPos").value=S.motm.pos;$("pmRate").value=S.motm.rate;$("pmTeam").value=S.motm.team;
-  [["c1l",0,0],["c1v",0,1],["c2l",1,0],["c2v",1,1],["c3l",2,0],["c3v",2,1]].forEach(([id,i,j])=>{$(id).value=S.motm.chips[i][j];});
-  renderMoments();renderStats();drawOutput();
+  renderMoments();renderStats();renderSlideCards();
+  drawOutput();
   // surface data-gap flags written by the fetcher so you verify before posting
   if(Array.isArray(d.review))d.review.forEach(r=>warn.push(r));
   const err=$("err");
@@ -923,19 +1102,260 @@ function latestUrl(raw){
 $("loadLatest").onclick=async()=>{
   const err=$("err");err.classList.add("hidden");
   const btn=$("loadLatest");
-  const url=latestUrl(repoInput.value);
-  if(!url){err.textContent="Paste your repo URL first (e.g. https://github.com/you/matchday).";err.classList.remove("hidden");return;}
+  const base=repoBase(repoInput.value);
+  if(!base){err.textContent="Paste your repo URL first (e.g. https://github.com/you/matchday).";err.classList.remove("hidden");return;}
   btn.disabled=true;const old=btn.textContent;btn.textContent="Loading…";
   try{
-    const res=await fetch(url,{cache:"no-store"});
-    if(!res.ok)throw new Error("HTTP "+res.status+(res.status===404?" — no matches/latest.json yet, or the repo is private":""));
-    applyMatchJSON(await res.json());
-    btn.textContent="✓ Loaded";setTimeout(()=>{btn.textContent=old;},1500);
+    // Prefer the full index so you never miss a match (incl. two played at once).
+    let usedIndex=false;
+    try{
+      const ir=await fetch(bust(base+"/matches/index.json"),{cache:"no-store"});
+      if(ir.ok){
+        const idx=await ir.json();
+        const items=Array.isArray(idx)?idx:(Array.isArray(idx.matches)?idx.matches:[]);
+        if(items.length){
+          usedIndex=true;
+          renderMatchList(items,base);
+          $("matchList").classList.remove("hidden");
+          // auto-load the newest one so you always land on a match…
+          await loadMatchUrl(matchItemUrl(items[0],base));
+          // …and if several share that newest date, flag them so none slip past.
+          const top=String(items[0].date||"");
+          const sameDay=items.filter(m=>String(m.date||"")===top).length;
+          btn.textContent="✓ Loaded newest";
+          if(items.length>1){
+            err.classList.remove("hidden");
+            err.style.color="var(--mut)";err.style.borderColor="var(--acc)";
+            err.textContent=sameDay>1
+              ? `Loaded the newest of ${sameDay} matches on ${top}. The full list is open below — tap any you missed.`
+              : `Loaded the newest match. ${items.length} total below — tap any earlier one you missed.`;
+          }
+          setTimeout(()=>{btn.textContent=old;},1600);
+        }
+      }
+    }catch(e){/* fall through to latest.json */}
+    if(!usedIndex){
+      // no index yet → old behaviour: just the single latest.json
+      const res=await fetch(bust(base+"/matches/latest.json"),{cache:"no-store"});
+      if(!res.ok)throw new Error("HTTP "+res.status+(res.status===404?" — no matches/latest.json or index.json in the repo yet":""));
+      applyMatchJSON(await res.json());
+      btn.textContent="✓ Loaded";setTimeout(()=>{btn.textContent=old;},1500);
+      err.classList.remove("hidden");err.style.color="var(--mut)";err.style.borderColor="var(--acc)";
+      err.textContent="Loaded latest.json. To browse every match (and catch missed ones), have your fetcher write matches/index.json.";
+    }
   }catch(ex){
-    err.textContent="Couldn't load latest match: "+ex.message;err.classList.remove("hidden");
+    err.style.color="";err.style.borderColor="";
+    err.textContent="Couldn't load matches: "+ex.message;err.classList.remove("hidden");
     btn.textContent=old;
   }finally{btn.disabled=false;}
 };
+
+/* shared: resolve a match-list item to its JSON URL */
+function matchItemUrl(it,base){
+  const file=it.file||it.json||it.path;
+  if(file)return /^https?:/.test(file)?file:base+"/"+file.replace(/^\/+/,"");
+  const slug=((it.teamA||it.home||"")+"-vs-"+(it.teamB||it.away||"")).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+  return base+"/matches/"+slug+".json";
+}
+
+/* =====================================================================
+   CATCH UP ON MISSED MATCHES
+   - Browse all matches your fetcher has saved (matches/index.json), pick
+     any one you missed, and load it.
+   - Or load a specific match by filename.
+   - Save the current match's slides + JSON into a per-match folder on disk
+     (desktop Chrome/Edge via the File System Access API; numbered downloads
+     elsewhere, e.g. iPhone).
+   ===================================================================== */
+
+/* Turn the repo field into the raw base, the index URL, or a specific match URL. */
+function repoBase(raw){
+  let u=String(raw||"").trim().replace(/\/+$/,"");
+  if(!u)return null;
+  const m=u.match(/^https?:\/\/github\.com\/([^\/]+)\/([^\/]+?)(?:\.git)?(?:\/(?:tree|blob)\/([^\/]+)(\/.*)?)?$/);
+  if(m)u=`https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]||"main"}${m[4]||""}`;
+  return u.replace(/\/matches\/.*$/,"").replace(/\/[^\/]*\.json$/,""); // strip any trailing file/path
+}
+const bust=u=>u+(u.includes("?")?"&":"?")+"t="+Date.now();
+function matchSlug(d){
+  const a=(d&&(d.teamA))||team(S.teamA).n, b=(d&&(d.teamB))||team(S.teamB).n;
+  return (a+"-vs-"+b).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+}
+
+/* Browse: fetch matches/index.json and list every match (incl. missed/older). */
+$("browseMatches").onclick=async()=>{
+  const err=$("err");err.classList.add("hidden");
+  const list=$("matchList");
+  const base=repoBase(repoInput.value);
+  if(!base){err.textContent="Paste your repo URL first.";err.classList.remove("hidden");return;}
+  const btn=$("browseMatches");btn.disabled=true;const old=btn.textContent;btn.textContent="Loading…";
+  try{
+    const res=await fetch(bust(base+"/matches/index.json"),{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status+(res.status===404?" — no matches/index.json in the repo yet":""));
+    let idx=await res.json();
+    const items=Array.isArray(idx)?idx:(Array.isArray(idx.matches)?idx.matches:[]);
+    if(!items.length)throw new Error("index.json had no matches");
+    renderMatchList(items,base);
+    list.classList.remove("hidden");
+    btn.textContent="✓ "+items.length+" matches";setTimeout(()=>{btn.textContent=old;},1500);
+  }catch(ex){
+    err.textContent="Couldn't browse matches: "+ex.message+". You can still load a specific match by filename below.";
+    err.classList.remove("hidden");btn.textContent=old;
+  }finally{btn.disabled=false;}
+};
+
+function renderMatchList(items,base){
+  const list=$("matchList");list.innerHTML="";
+  items.forEach(it=>{
+    const home=it.teamA||it.home||"?", away=it.teamB||it.away||"?";
+    const sa=it.scoreA??it.home_score, sb=it.scoreB??it.away_score;
+    const score=(sa!=null&&sb!=null)?`${sa}–${sb}`:"vs";
+    const live=/live|1st|2nd|ht/i.test(String(it.status||""))&&!/ft|full/i.test(String(it.status||""));
+    const when=it.date||it.kickoff||it.local_date||"";
+    const b=document.createElement("button");
+    b.className="match-item";
+    b.innerHTML=`<span>${esc(home)} <span class="mi-score">${esc(score)}</span> ${esc(away)}</span>`+
+      `<span class="mi-meta">${live?'<span class="mi-live">● LIVE</span> ':""}${esc(when)}</span>`;
+    b.onclick=()=>loadMatchUrl(matchItemUrl(it,base),b);
+    list.appendChild(b);
+  });
+}
+
+async function loadMatchUrl(url,btnEl){
+  const err=$("err");err.classList.add("hidden");
+  if(btnEl)btnEl.style.opacity=".5";
+  try{
+    const res=await fetch(bust(url),{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    applyMatchJSON(await res.json());
+    if(btnEl){btnEl.style.opacity="1";btnEl.style.borderColor="var(--ok,#39d98a)";}
+  }catch(ex){
+    if(btnEl)btnEl.style.opacity="1";
+    err.textContent="Couldn't load that match: "+ex.message+" — check the file exists in matches/.";
+    err.classList.remove("hidden");
+  }
+}
+
+/* Load a specific match by name ("brazil-vs-morocco"), a filename, or full URL.
+   Because your archive files are matches/<date>-<slug>.json, a bare slug is
+   resolved against index.json so you don't need to know the date prefix. */
+$("loadNamed").onclick=async()=>{
+  const err=$("err");err.classList.add("hidden");
+  const v=String($("matchFile").value||"").trim();
+  if(!v){err.textContent="Type a match name (e.g. brazil-vs-morocco) or a full .json URL.";err.classList.remove("hidden");return;}
+  if(/^https?:/.test(v)){return loadMatchUrl(v);}
+  const base=repoBase(repoInput.value);
+  if(!base){err.textContent="Paste your repo URL first, or give a full .json URL.";err.classList.remove("hidden");return;}
+  // explicit path / filename → use as-is
+  if(/\.json$/.test(v)||v.includes("/")){return loadMatchUrl(base+"/"+v.replace(/^\/+/,""));}
+  const want=v.replace(/\s+/g,"-").toLowerCase().replace(/[^a-z0-9-]+/g,"-").replace(/-vs-|--/g,"-vs-");
+  // try the index first (handles date-prefixed filenames like 2026-06-13-brazil-vs-morocco.json)
+  try{
+    const ir=await fetch(bust(base+"/matches/index.json"),{cache:"no-store"});
+    if(ir.ok){
+      const idx=await ir.json();const items=Array.isArray(idx)?idx:(idx.matches||[]);
+      const hit=items.find(it=>{
+        const slug=((it.teamA||"")+"-vs-"+(it.teamB||"")).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
+        return slug===want || String(it.file||"").toLowerCase().includes(want);
+      });
+      if(hit)return loadMatchUrl(matchItemUrl(hit,base));
+    }
+  }catch(e){/* fall through */}
+  // last resort: assume matches/<slug>.json
+  loadMatchUrl(base+"/matches/"+want+".json");
+};
+
+/* ---- Save the current match's content into a per-match folder on disk ---- */
+let saveDir=null;          // chosen parent directory handle (desktop only)
+const canFolder = typeof window.showDirectoryPicker==="function";
+$("pickFolder").onclick=async()=>{
+  const err=$("err");err.classList.add("hidden");
+  if(!canFolder){
+    $("folderName").textContent="Folder-save isn't supported on this browser (e.g. iPhone) — use the per-slide Save buttons instead.";
+    return;
+  }
+  try{
+    saveDir=await window.showDirectoryPicker({mode:"readwrite"});
+    $("folderName").textContent="Saving into: "+saveDir.name+" / <match>";
+  }catch(e){ if(e&&e.name!=="AbortError"){$("folderName").textContent="Couldn't open folder: "+e.message;} }
+};
+
+$("saveToFolder").onclick=async()=>{
+  const err=$("err");err.classList.add("hidden");
+  const btn=$("saveToFolder");const old=btn.textContent;
+  const slug=matchSlug();
+  const arts=document.querySelectorAll(".track .art");
+  if(!arts.length){err.textContent="No slides to save.";err.classList.remove("hidden");return;}
+  btn.disabled=true;
+  try{
+    if(canFolder&&saveDir){
+      // create (or reuse) a subfolder named after the match, write PNGs + match.json
+      const dir=await saveDir.getDirectoryHandle(slug,{create:true});
+      for(let i=0;i<arts.length;i++){
+        btn.textContent=`Saving ${i+1}/${arts.length}…`;
+        const url=await renderSlidePng(i);
+        const blob=await (await fetch(url)).blob();
+        const fh=await dir.getFileHandle(String(i+1).padStart(2,"0")+".png",{create:true});
+        const ws=await fh.createWritable();await ws.write(blob);await ws.close();
+      }
+      // also store the editable match data so you can reopen/regenerate later
+      const jh=await dir.getFileHandle("match.json",{create:true});
+      const jw=await jh.createWritable();await jw.write(JSON.stringify(currentMatchJSON(),null,2));await jw.close();
+      btn.textContent="✓ Saved to "+slug+"/";setTimeout(()=>{btn.textContent=old;},2200);
+    }else{
+      // fallback: numbered downloads, prefixed with the match slug
+      for(let i=0;i<arts.length;i++){
+        btn.textContent=`Saving ${i+1}/${arts.length}…`;
+        const url=await renderSlidePng(i);
+        const a=document.createElement("a");a.download=slug+"-"+String(i+1).padStart(2,"0")+".png";a.href=url;a.click();
+        await new Promise(r=>setTimeout(r,350));
+      }
+      btn.textContent="✓ Downloaded ("+slug+")";setTimeout(()=>{btn.textContent=old;},2200);
+    }
+  }catch(ex){
+    err.textContent="Couldn't save the match: "+ex.message;err.classList.remove("hidden");btn.textContent=old;
+  }finally{btn.disabled=false;}
+};
+
+/* Snapshot current editor state back into the JSON shape applyMatchJSON reads. */
+function currentMatchJSON(){
+  return {
+    teamA:team(S.teamA).n, teamB:team(S.teamB).n,
+    scoreA:S.scoreA, scoreB:S.scoreB,
+    venue:S.venue, date:S.date, comp:S.comp, handle:S.handle,
+    moments:S.moments, stats:S.stats, motm:S.motm
+  };
+}
+if(!canFolder){$("folderName").textContent="";}
+
+/* Render one preview slide to a 1080×1350 PNG.
+   On phones (Web Share API + file support) it offers the native share sheet so
+   you can send straight to Instagram; otherwise it downloads the file. */
+async function renderSlidePng(index){
+  const arts=document.querySelectorAll(".track .art");
+  const art=arts[index];if(!art)throw new Error("slide not found");
+  return htmlToImage.toPng(art,{width:1080,height:1350,pixelRatio:1,style:{transform:"scale(1)"}});
+}
+async function exportOne(index,mode,label){
+  const err=$("err");err.classList.add("hidden");
+  try{
+    const url=await renderSlidePng(index);
+    const fname=String(index+1).padStart(2,"0")+".png";
+    if(mode==="share"&&navigator.share){
+      const blob=await (await fetch(url)).blob();
+      const file=new File([blob],fname,{type:"image/png"});
+      if(navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({files:[file],title:(label||"Match graphic")});
+        return;
+      }
+    }
+    const a=document.createElement("a");a.download=fname;a.href=url;a.click();
+  }catch(e){
+    if(e&&e.name==="AbortError")return;   // user dismissed the share sheet
+    err.textContent="Export needs internet (for the image library + fonts). You can still screenshot the slide.";
+    err.classList.remove("hidden");
+  }
+}
 
 /* ---------- export: each slide → exact 1080×1350 PNG, numbered ---------- */
 $("export").onclick=async()=>{
@@ -945,10 +1365,7 @@ $("export").onclick=async()=>{
   for(let i=0;i<arts.length;i++){
     btn.textContent=`Rendering ${i+1}/${arts.length}…`;
     try{
-      const url=await htmlToImage.toPng(arts[i],{
-        width:1080,height:1350,pixelRatio:1,
-        style:{transform:"scale(1)"}   // undo preview scaling on the export clone
-      });
+      const url=await renderSlidePng(i);
       const a=document.createElement("a");
       a.download=String(i+1).padStart(2,"0")+".png";
       a.href=url;a.click();
@@ -960,6 +1377,7 @@ $("export").onclick=async()=>{
   }
   btn.disabled=false;btn.textContent="⬇ Export PNGs · 1080×1350";
 };
+
 </script>
 </body>
 </html>
