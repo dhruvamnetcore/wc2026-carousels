@@ -10,3 +10,6 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 
 ### USA 4–1 Paraguay — 2026-06-12
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### South Korea 2–1 Czechia — 2026-06-11
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
