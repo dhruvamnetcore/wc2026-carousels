@@ -182,13 +182,6 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .slide-cell{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;scroll-snap-align:start;}
 .slide-cell .slide-outer{width:min(300px,78vw);}
 .slide-actions{display:flex;gap:8px;}
-.match-list{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin:6px 0 2px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--well);}
-.match-list.hidden{display:none;}
-.match-item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:9px;padding:9px 11px;cursor:pointer;color:var(--ink);font-size:14px;font-family:inherit;transition:.12s;}
-.match-item:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 8%, transparent);}
-.match-item .mi-score{font-weight:800;font-variant-numeric:tabular-nums;}
-.match-item .mi-meta{margin-left:auto;font-size:11px;color:var(--mut);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
-.match-item .mi-live{color:#ff3b3b;font-weight:800;font-size:11px;}
 .mini-act{flex:1;background:var(--well);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:9px 8px;font-size:13px;font-weight:700;cursor:pointer;min-height:40px;transition:.15s;}
 .mini-act:hover{border-color:var(--acc);color:var(--acc);}
 .mini-act:active{transform:scale(.97);}
@@ -341,14 +334,12 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
       <button class="ghost" id="loadLatest">⚡ Load latest match</button>
     </div>
     <div class="row" style="align-items:flex-end;">
-      <button class="ghost" id="browseMatches">📋 Browse all matches</button>
-      <div style="flex:1;min-width:200px;">
-        <span class="lbl">…or load a specific match file</span>
-        <input id="matchFile" type="text" placeholder="e.g. brazil-vs-morocco  (or full .json path)">
+      <button class="ghost" id="browseMatches">📋 Load match list</button>
+      <div style="flex:1;min-width:240px;">
+        <span class="lbl">Pick a match (loaded &amp; archived)</span>
+        <select id="matchSelect"><option value="">— load the list first —</option></select>
       </div>
-      <button class="ghost" id="loadNamed">Load this match</button>
     </div>
-    <div id="matchList" class="match-list hidden"></div>
     <div class="row" style="align-items:flex-end;">
       <button class="ghost" id="pickFolder">📁 Choose save folder (once)</button>
       <button class="ghost" id="saveToFolder">💾 Save this match to its folder</button>
@@ -1115,10 +1106,10 @@ $("loadLatest").onclick=async()=>{
         const items=Array.isArray(idx)?idx:(Array.isArray(idx.matches)?idx.matches:[]);
         if(items.length){
           usedIndex=true;
-          renderMatchList(items,base);
-          $("matchList").classList.remove("hidden");
+          fillMatchDropdown(items,base);
           // auto-load the newest one so you always land on a match…
           await loadMatchUrl(matchItemUrl(items[0],base));
+          $("matchSelect").value="0"; // reflect the loaded one in the dropdown
           // …and if several share that newest date, flag them so none slip past.
           const top=String(items[0].date||"");
           const sameDay=items.filter(m=>String(m.date||"")===top).length;
@@ -1127,8 +1118,8 @@ $("loadLatest").onclick=async()=>{
             err.classList.remove("hidden");
             err.style.color="var(--mut)";err.style.borderColor="var(--acc)";
             err.textContent=sameDay>1
-              ? `Loaded the newest of ${sameDay} matches on ${top}. The full list is open below — tap any you missed.`
-              : `Loaded the newest match. ${items.length} total below — tap any earlier one you missed.`;
+              ? `Loaded the newest of ${sameDay} matches on ${top}. Pick any you missed from the dropdown.`
+              : `Loaded the newest match. ${items.length} total — pick any earlier one from the dropdown.`;
           }
           setTimeout(()=>{btn.textContent=old;},1600);
         }
@@ -1185,85 +1176,60 @@ function matchSlug(d){
 /* Browse: fetch matches/index.json and list every match (incl. missed/older). */
 $("browseMatches").onclick=async()=>{
   const err=$("err");err.classList.add("hidden");
-  const list=$("matchList");
   const base=repoBase(repoInput.value);
   if(!base){err.textContent="Paste your repo URL first.";err.classList.remove("hidden");return;}
   const btn=$("browseMatches");btn.disabled=true;const old=btn.textContent;btn.textContent="Loading…";
   try{
     const res=await fetch(bust(base+"/matches/index.json"),{cache:"no-store"});
-    if(!res.ok)throw new Error("HTTP "+res.status+(res.status===404?" — no matches/index.json in the repo yet":""));
+    if(!res.ok)throw new Error("HTTP "+res.status+(res.status===404?" — no matches/index.json in the repo yet (run your fetcher once)":""));
     let idx=await res.json();
     const items=Array.isArray(idx)?idx:(Array.isArray(idx.matches)?idx.matches:[]);
     if(!items.length)throw new Error("index.json had no matches");
-    renderMatchList(items,base);
-    list.classList.remove("hidden");
+    fillMatchDropdown(items,base);
     btn.textContent="✓ "+items.length+" matches";setTimeout(()=>{btn.textContent=old;},1500);
   }catch(ex){
-    err.textContent="Couldn't browse matches: "+ex.message+". You can still load a specific match by filename below.";
+    err.textContent="Couldn't load the match list: "+ex.message+".";
     err.classList.remove("hidden");btn.textContent=old;
   }finally{btn.disabled=false;}
 };
 
-function renderMatchList(items,base){
-  const list=$("matchList");list.innerHTML="";
-  items.forEach(it=>{
+/* Populate the dropdown; selecting an option loads that match. */
+let matchIndexCache=[];
+function fillMatchDropdown(items,base){
+  matchIndexCache=items;
+  const sel=$("matchSelect");
+  sel.innerHTML='<option value="">— pick a match ('+items.length+') —</option>';
+  items.forEach((it,i)=>{
     const home=it.teamA||it.home||"?", away=it.teamB||it.away||"?";
     const sa=it.scoreA??it.home_score, sb=it.scoreB??it.away_score;
     const score=(sa!=null&&sb!=null)?`${sa}–${sb}`:"vs";
     const live=/live|1st|2nd|ht/i.test(String(it.status||""))&&!/ft|full/i.test(String(it.status||""));
     const when=it.date||it.kickoff||it.local_date||"";
-    const b=document.createElement("button");
-    b.className="match-item";
-    b.innerHTML=`<span>${esc(home)} <span class="mi-score">${esc(score)}</span> ${esc(away)}</span>`+
-      `<span class="mi-meta">${live?'<span class="mi-live">● LIVE</span> ':""}${esc(when)}</span>`;
-    b.onclick=()=>loadMatchUrl(matchItemUrl(it,base),b);
-    list.appendChild(b);
+    const o=document.createElement("option");
+    o.value=String(i);
+    o.textContent=`${home} ${score} ${away}${when?"  ·  "+when:""}${live?"  · LIVE":""}${it.needsReview?"  · ⚠ review":""}`;
+    sel.appendChild(o);
   });
+  sel.dataset.base=base;
 }
+$("matchSelect").onchange=e=>{
+  const i=e.target.value;if(i==="")return;
+  const it=matchIndexCache[+i];if(!it)return;
+  loadMatchUrl(matchItemUrl(it,$("matchSelect").dataset.base||repoBase(repoInput.value)));
+};
 
-async function loadMatchUrl(url,btnEl){
-  const err=$("err");err.classList.add("hidden");
-  if(btnEl)btnEl.style.opacity=".5";
+/* Fetch a match JSON by URL and load it into the editor. */
+async function loadMatchUrl(url){
+  const err=$("err");err.classList.add("hidden");err.style.color="";err.style.borderColor="";
   try{
     const res=await fetch(bust(url),{cache:"no-store"});
     if(!res.ok)throw new Error("HTTP "+res.status);
     applyMatchJSON(await res.json());
-    if(btnEl){btnEl.style.opacity="1";btnEl.style.borderColor="var(--ok,#39d98a)";}
   }catch(ex){
-    if(btnEl)btnEl.style.opacity="1";
     err.textContent="Couldn't load that match: "+ex.message+" — check the file exists in matches/.";
     err.classList.remove("hidden");
   }
 }
-
-/* Load a specific match by name ("brazil-vs-morocco"), a filename, or full URL.
-   Because your archive files are matches/<date>-<slug>.json, a bare slug is
-   resolved against index.json so you don't need to know the date prefix. */
-$("loadNamed").onclick=async()=>{
-  const err=$("err");err.classList.add("hidden");
-  const v=String($("matchFile").value||"").trim();
-  if(!v){err.textContent="Type a match name (e.g. brazil-vs-morocco) or a full .json URL.";err.classList.remove("hidden");return;}
-  if(/^https?:/.test(v)){return loadMatchUrl(v);}
-  const base=repoBase(repoInput.value);
-  if(!base){err.textContent="Paste your repo URL first, or give a full .json URL.";err.classList.remove("hidden");return;}
-  // explicit path / filename → use as-is
-  if(/\.json$/.test(v)||v.includes("/")){return loadMatchUrl(base+"/"+v.replace(/^\/+/,""));}
-  const want=v.replace(/\s+/g,"-").toLowerCase().replace(/[^a-z0-9-]+/g,"-").replace(/-vs-|--/g,"-vs-");
-  // try the index first (handles date-prefixed filenames like 2026-06-13-brazil-vs-morocco.json)
-  try{
-    const ir=await fetch(bust(base+"/matches/index.json"),{cache:"no-store"});
-    if(ir.ok){
-      const idx=await ir.json();const items=Array.isArray(idx)?idx:(idx.matches||[]);
-      const hit=items.find(it=>{
-        const slug=((it.teamA||"")+"-vs-"+(it.teamB||"")).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");
-        return slug===want || String(it.file||"").toLowerCase().includes(want);
-      });
-      if(hit)return loadMatchUrl(matchItemUrl(hit,base));
-    }
-  }catch(e){/* fall through */}
-  // last resort: assume matches/<slug>.json
-  loadMatchUrl(base+"/matches/"+want+".json");
-};
 
 /* ---- Save the current match's content into a per-match folder on disk ---- */
 let saveDir=null;          // chosen parent directory handle (desktop only)
