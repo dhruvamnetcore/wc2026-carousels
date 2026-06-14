@@ -135,13 +135,125 @@ async function tsdbStats(ourA, ourB, date) {
   } catch { return {}; }
 }
 
-/* competition label: "World Cup · Group A · Match 2" */
-function buildComp(m) {
+/* ---- Optional richer sources (server-side in Actions, so CORS is irrelevant).
+   Both activate ONLY if their free key is set as a GitHub Actions secret / env
+   var; with no keys, the fetcher behaves exactly as before (TheSportsDB + manual).
+     APIFOOTBALL_KEY  → api-sports.io  (reliable events/cards; partial WC stats)
+     HIGHLIGHTLY_KEY  → highlightly.net (possession/passes/cards/shots)        ---- */
+const AF_KEY = process.env.APIFOOTBALL_KEY || "";
+const HL_KEY = process.env.HIGHLIGHTLY_KEY || "";
+
+// map provider stat names → our decided labels
+function mapStatName(name) {
+  const n = norm(name);
+  if (n.includes("ball possession") || n === "possession") return "Possession";
+  if (n.includes("shots on goal") || n.includes("shots on target")) return "Shots on target";
+  if (n.includes("passes") && (n.includes("accurate") || n.includes("completed") || n.includes("successful"))) return "Passes completed";
+  if (n === "total passes" || n === "passes") return "Passes completed";
+  if (n.includes("offside")) return "Offsides";
+  return null;
+}
+
+async function apiFootballStats(ourA, ourB, date) {
+  if (!AF_KEY) return { stats: {}, events: [] };
+  try {
+    const H = { "x-apisports-key": AF_KEY };
+    // find the fixture by date + team names
+    const day = date; // YYYY-MM-DD
+    const fr = await (await fetch(`https://v3.football.api-sports.io/fixtures?date=${day}`, { headers: H })).json();
+    const want = new Set([canon(ourA), canon(ourB)]);
+    const fx = (fr.response || []).find(f =>
+      [canon(f.teams?.home?.name), canon(f.teams?.away?.name)].every(t => [...want].some(w => t.includes(w) || w.includes(t))));
+    if (!fx) return { stats: {}, events: [] };
+    const homeIsA = [canon(fx.teams.home.name)].some(t => t.includes(canon(ourA)) || canon(ourA).includes(t));
+    const id = fx.fixture.id;
+    const out = {};
+    // statistics
+    try {
+      const sr = await (await fetch(`https://v3.football.api-sports.io/fixtures/statistics?fixture=${id}`, { headers: H })).json();
+      const arr = sr.response || [];
+      if (arr.length === 2) {
+        const homeStats = arr[0].statistics || [], awayStats = arr[1].statistics || [];
+        for (let i = 0; i < homeStats.length; i++) {
+          const k = mapStatName(homeStats[i].type);
+          if (!k) continue;
+          const hv = parseFloat(String(homeStats[i].value).replace("%", "")) || 0;
+          const av = parseFloat(String((awayStats[i] || {}).value).replace("%", "")) || 0;
+          out[k] = homeIsA ? [hv, av] : [av, hv];
+        }
+      }
+    } catch { /* stats may be uncovered for WC on free tier */ }
+    // events → goals + cards for the timeline
+    const events = [];
+    try {
+      const er = await (await fetch(`https://v3.football.api-sports.io/fixtures/events?fixture=${id}`, { headers: H })).json();
+      for (const ev of er.response || []) {
+        const isHome = canon(ev.team?.name) === canon(fx.teams.home.name);
+        const side = (isHome === homeIsA) ? "A" : "B";
+        const min = String(ev.time?.elapsed ?? "") + (ev.time?.extra ? "+" + ev.time.extra : "");
+        if (ev.type === "Goal") events.push({ min, team: side, type: /own/i.test(ev.detail || "") ? "og" : (/pen/i.test(ev.detail || "") ? "pen" : "goal"), who: ev.player?.name || "", what: ev.assist?.name ? `Assist: ${ev.assist.name}` : "" });
+        else if (ev.type === "Card") events.push({ min, team: side, type: /red/i.test(ev.detail || "") ? "red" : "yellow", who: ev.player?.name || "", what: "" });
+      }
+    } catch { /* */ }
+    return { stats: out, events };
+  } catch { return { stats: {}, events: [] }; }
+}
+
+async function highlightlyStats(ourA, ourB, date) {
+  if (!HL_KEY) return { stats: {}, events: [] };
+  try {
+    const H = { "x-api-key": HL_KEY };
+    const mr = await (await fetch(`https://soccer.highlightly.net/matches?date=${date}`, { headers: H })).json();
+    const list = Array.isArray(mr) ? mr : (mr.data || mr.matches || []);
+    const want = new Set([canon(ourA), canon(ourB)]);
+    const m = list.find(x => {
+      const h = canon(x.homeTeam?.name || x.home?.name || ""), a = canon(x.awayTeam?.name || x.away?.name || "");
+      return [h, a].every(t => [...want].some(w => t.includes(w) || w.includes(t)));
+    });
+    if (!m) return { stats: {}, events: [] };
+    const homeIsA = [canon(m.homeTeam?.name || m.home?.name || "")].some(t => t.includes(canon(ourA)) || canon(ourA).includes(t));
+    const id = m.id || m.matchId;
+    const out = {};
+    try {
+      const sr = await (await fetch(`https://soccer.highlightly.net/statistics/${id}`, { headers: H })).json();
+      const rows = sr.statistics || sr.data || [];
+      // Highlightly returns per-team blocks; normalise defensively
+      const blocks = Array.isArray(rows) ? rows : [];
+      if (blocks.length === 2) {
+        for (const stat of blocks[0].statistics || []) {
+          const k = mapStatName(stat.type || stat.name);
+          if (!k) continue;
+          const hv = parseFloat(String(stat.value).replace("%", "")) || 0;
+          const match = (blocks[1].statistics || []).find(s => (s.type || s.name) === (stat.type || stat.name));
+          const av = parseFloat(String(match?.value).replace("%", "")) || 0;
+          out[k] = homeIsA ? [hv, av] : [av, hv];
+        }
+      }
+    } catch { /* */ }
+    return { stats: out, events: [] };
+  } catch { return { stats: {}, events: [] }; }
+}
+
+/* Format a FIFA UTC timestamp as US Eastern kickoff time, e.g. "6:00 PM ET". */
+function etKickoff(iso) {
+  if (!iso) return "";
+  try {
+    const t = new Date(iso);
+    if (isNaN(t)) return "";
+    const s = t.toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" });
+    return `${s} ET`;
+  } catch { return ""; }
+}
+
+/* competition label: "World Cup · Group A · Match 2 · 6:00 PM ET" */
+function buildComp(m, kickoffIso) {
   const parts = ["World Cup"];
   const g = desc(m.GroupName);
   if (g) parts.push(g);                                  // already "Group A"
   if (m.MatchNumber != null) parts.push(`Match ${m.MatchNumber}`);
   else if (desc(m.StageName)) parts.push(desc(m.StageName));
+  const et = etKickoff(kickoffIso);
+  if (et) parts.push(et);                                // ET kickoff, not local TZ
   return parts.join(" · ");
 }
 
@@ -179,7 +291,10 @@ async function processMatch(cal) {
   const { IdSeason, IdStage, IdMatch } = cal;
   const home0 = desc(cal.Home?.TeamName), away0 = desc(cal.Away?.TeamName);
   const ourA = ourName(home0), ourB = ourName(away0);
-  const date = String(cal.Date || cal.LocalDate || "").slice(0, 10);
+  // FIFA's "Date" is UTC; a 9pm US kickoff rolls into the next UTC day, which
+  // wrongly bumped the match date forward. LocalDate is the venue-local day —
+  // use it first so the date matches the real matchday.
+  const date = String(cal.LocalDate || cal.Date || "").slice(0, 10);
   const label = `${ourA} vs ${ourB} (${date})`;
   const file = `matches/${date}-${slug(ourA)}-vs-${slug(ourB)}.json`;
   if (existsSync(file)) { console.log(`• ${label}: already fetched`); return false; }
@@ -188,11 +303,32 @@ async function processMatch(cal) {
   const home = d.HomeTeam || {}, away = d.AwayTeam || {};
   const scoreA = home.Score ?? cal.HomeTeamScore, scoreB = away.Score ?? cal.AwayTeamScore;
 
-  const moments = await buildMoments(home, away);
+  let moments = await buildMoments(home, away);
 
-  // stats: pull what TheSportsDB has, then assemble the DECIDED fixed set so
-  // every match shows the same rows (not whatever the source happened to return).
-  const raw = await tsdbStats(ourA, ourB, date);
+  // stats: layer sources best→fallback so the decided set fills as fully as possible.
+  // Highlightly (richest) ▸ API-Football ▸ TheSportsDB ▸ manual. All key-gated.
+  const tsdb = await tsdbStats(ourA, ourB, date);
+  const af = await apiFootballStats(ourA, ourB, date);
+  const hl = await highlightlyStats(ourA, ourB, date);
+
+  // If FIFA's bookings were sparse, supplement the timeline with API-Football
+  // events (reliable for yellow/red cards). Dedupe by minute+team+type.
+  if (af.events && af.events.length) {
+    const seen = new Set(moments.map(m => `${parseInt(m.min)||0}-${m.team}-${m.type}`));
+    for (const ev of af.events) {
+      const key = `${parseInt(ev.min)||0}-${ev.team}-${ev.type}`;
+      if (!seen.has(key)) { moments.push(ev); seen.add(key); }
+    }
+    moments.sort((a, b) => (parseInt(a.min) || 0) - (parseInt(b.min) || 0));
+    if (moments.length > 10) {
+      const keep = moments.filter(e => e.type !== "yellow");
+      const yellows = moments.filter(e => e.type === "yellow");
+      while (keep.length < 10 && yellows.length) keep.push(yellows.shift());
+      keep.sort((a, b) => (parseInt(a.min) || 0) - (parseInt(b.min) || 0));
+      moments = keep.slice(0, 10);
+    }
+  }
+  const raw = { ...tsdb, ...af.stats, ...hl.stats };   // later spreads win = richer sources override
   const yc = [0, 0];
   [home, away].forEach((t, i) => (t.Bookings || []).forEach(bk => { if (Number(bk.Card) === 1) yc[i]++; }));
   const stats = {};
@@ -238,7 +374,7 @@ async function processMatch(cal) {
     };
   }
 
-  const comp = buildComp(d);
+  const comp = buildComp(d, cal.Date);
   const venue = [desc(d.Stadium?.Name), desc(d.Stadium?.CityName)].filter(Boolean).join(", ");
 
   const slides = ["cover", "moments"];
