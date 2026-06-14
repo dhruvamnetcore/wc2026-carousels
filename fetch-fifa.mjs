@@ -238,37 +238,41 @@ async function apiFootballStats(ourA, ourB, date) {
 }
 
 async function highlightlyStats(ourA, ourB, date) {
-  if (!HL_KEY) return { stats: {}, events: [] };
+  if (!HL_KEY) return { stats: {}, events: [], found: false };
   try {
     const H = { "x-api-key": HL_KEY };
-    const mr = await (await fetch(`https://soccer.highlightly.net/matches?date=${date}`, { headers: H })).json();
+    // World Cup 2026 is leagueId=1635 on Highlightly; filter to it so we get the right matches.
+    const mr = await (await fetch(`https://soccer.highlightly.net/matches?leagueId=1635&date=${date}`, { headers: H })).json();
     const list = Array.isArray(mr) ? mr : (mr.data || mr.matches || []);
     const m = list.find(x => {
-      const h = x.homeTeam?.name || x.home?.name || "", a = x.awayTeam?.name || x.away?.name || "";
+      const h = x.homeTeam?.name || x.home?.name || x.homeTeamName || "", a = x.awayTeam?.name || x.away?.name || x.awayTeamName || "";
       return (teamsMatch(h, ourA) && teamsMatch(a, ourB)) || (teamsMatch(h, ourB) && teamsMatch(a, ourA));
     });
-    if (!m) return { stats: {}, events: [] };
-    const homeIsA = teamsMatch(m.homeTeam?.name || m.home?.name || "", ourA);
+    if (!m) return { stats: {}, events: [], found: false };
+    const homeIsA = teamsMatch(m.homeTeam?.name || m.home?.name || m.homeTeamName || "", ourA);
     const id = m.id || m.matchId;
     const out = {};
     try {
+      // stats endpoint takes matchId as a PATH parameter
       const sr = await (await fetch(`https://soccer.highlightly.net/statistics/${id}`, { headers: H })).json();
-      const rows = sr.statistics || sr.data || [];
-      // Highlightly returns per-team blocks; normalise defensively
-      const blocks = Array.isArray(rows) ? rows : [];
-      if (blocks.length === 2) {
-        for (const stat of blocks[0].statistics || []) {
-          const k = mapStatName(stat.type || stat.name);
+      // response is [homeTeam, awayTeam], each with a statistics list
+      const blocks = Array.isArray(sr) ? sr : (sr.statistics || sr.data || []);
+      if (Array.isArray(blocks) && blocks.length === 2) {
+        const homeStats = blocks[0].statistics || blocks[0].stats || [];
+        const awayStats = blocks[1].statistics || blocks[1].stats || [];
+        for (const stat of homeStats) {
+          const label = stat.type || stat.name || stat.displayName;
+          const k = mapStatName(label);
           if (!k) continue;
           const hv = parseFloat(String(stat.value).replace("%", "")) || 0;
-          const match = (blocks[1].statistics || []).find(s => (s.type || s.name) === (stat.type || stat.name));
+          const match = awayStats.find(s => (s.type || s.name || s.displayName) === label);
           const av = parseFloat(String(match?.value).replace("%", "")) || 0;
           out[k] = homeIsA ? [hv, av] : [av, hv];
         }
       }
     } catch { /* */ }
-    return { stats: out, events: [] };
-  } catch { return { stats: {}, events: [] }; }
+    return { stats: out, events: [], found: true };
+  } catch { return { stats: {}, events: [], found: false }; }
 }
 
 /* Format a FIFA UTC timestamp as US Eastern kickoff time, e.g. "6:00 PM ET". */
@@ -353,7 +357,7 @@ async function processMatch(cal) {
     `keys[AF:${AF_KEY ? "set" : "—"} HL:${HL_KEY ? "set" : "—"}] ` +
     `tsdb{${Object.keys(tsdb).join(",") || "∅"}} ` +
     `apifootball{${Object.keys(af.stats).join(",") || "∅"}|ev:${af.events.length}} ` +
-    `highlightly{${Object.keys(hl.stats).join(",") || "∅"}}`);
+    `highlightly{${Object.keys(hl.stats).join(",") || "∅"}|found:${hl.found ? "y" : "n"}}`);
 
   // If FIFA's bookings were sparse, supplement the timeline with API-Football
   // events (reliable for yellow/red cards). Dedupe by minute+team+type.
