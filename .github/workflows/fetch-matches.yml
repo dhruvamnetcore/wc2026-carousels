@@ -2,7 +2,7 @@ name: Matchday pipeline
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # every 10 min (GitHub cron is best-effort; a reliable external pinger is better)
+    - cron: "*/30 * * * *"   # every 30 min — GitHub honors this more reliably than sub-hourly schedules
   workflow_dispatch:        # manual "Run workflow" button for testing
     inputs:
       refetch:
