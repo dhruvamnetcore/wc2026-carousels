@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Sweden 5–1 Tunisia — 2026-06-14
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Australia 2–0 Türkiye — 2026-06-13
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
