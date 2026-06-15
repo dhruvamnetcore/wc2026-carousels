@@ -25,8 +25,8 @@
       "min": "51",
       "team": "A",
       "type": "goal",
-      "who": "V. van Dijk",
-      "what": "Assist: R. Gravenberch"
+      "who": "Virgil van Dijk",
+      "what": "Assist: Ryan Gravenberch"
     },
     {
       "min": "57",
@@ -64,6 +64,13 @@
       "what": ""
     },
     {
+      "min": "89",
+      "team": "B",
+      "type": "goal",
+      "who": "Daichi Kamada",
+      "what": "Assist: Koki Ogawa"
+    },
+    {
       "min": "90+1",
       "team": "A",
       "type": "yellow",
@@ -85,8 +92,8 @@
       40
     ],
     "Passes completed": [
-      525,
-      342
+      524,
+      341
     ],
     "Offsides": [
       1,
