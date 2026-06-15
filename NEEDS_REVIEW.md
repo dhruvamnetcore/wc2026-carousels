@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Spain 0–0 Cape Verde — 2026-06-15
+- MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+
 ### Sweden 5–1 Tunisia — 2026-06-14
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 

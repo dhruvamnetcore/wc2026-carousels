@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-15T18:20:47.509Z",
+  "updated": "2026-06-15T18:51:55.641Z",
   "matches": [
     {
       "file": "matches/2026-06-15-spain-vs-cape-verde.json",
@@ -8,9 +8,9 @@
       "scoreA": 0,
       "scoreB": 0,
       "date": "2026-06-15",
-      "comp": "World Cup · Group H · Match 14 · 12:00 PM ET",
+      "comp": "World Cup · Group H",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-14-sweden-vs-tunisia.json",
@@ -19,7 +19,7 @@
       "scoreA": 5,
       "scoreB": 1,
       "date": "2026-06-14",
-      "comp": "World Cup · Group F · Match 12 · 10:00 PM ET",
+      "comp": "World Cup · Group F",
       "status": "FT",
       "needsReview": true
     },
@@ -30,7 +30,7 @@
       "scoreA": 2,
       "scoreB": 2,
       "date": "2026-06-14",
-      "comp": "World Cup · Group F · Match 11 · 4:00 PM ET",
+      "comp": "World Cup · Group F",
       "status": "FT",
       "needsReview": false
     },
@@ -41,7 +41,7 @@
       "scoreA": 1,
       "scoreB": 0,
       "date": "2026-06-14",
-      "comp": "World Cup · Group E · Match 9 · 7:00 PM ET",
+      "comp": "World Cup · Group E",
       "status": "FT",
       "needsReview": false
     },
@@ -63,7 +63,7 @@
       "scoreA": 7,
       "scoreB": 1,
       "date": "2026-06-14",
-      "comp": "World Cup · Group E · Match 10 · 1:00 PM ET",
+      "comp": "World Cup · Group E",
       "status": "FT",
       "needsReview": false
     },
@@ -96,7 +96,7 @@
       "scoreA": 1,
       "scoreB": 1,
       "date": "2026-06-13",
-      "comp": "World Cup · Group B · Match 8 · 3:00 PM ET",
+      "comp": "World Cup · Group B",
       "status": "FT",
       "needsReview": false
     },
@@ -107,7 +107,7 @@
       "scoreA": 0,
       "scoreB": 1,
       "date": "2026-06-13",
-      "comp": "World Cup · Group C · Match 5 · 9:00 PM ET",
+      "comp": "World Cup · Group C",
       "status": "FT",
       "needsReview": true
     },
@@ -118,7 +118,7 @@
       "scoreA": 1,
       "scoreB": 1,
       "date": "2026-06-13",
-      "comp": "World Cup · Group C · Match 7 · 6:00 PM ET",
+      "comp": "World Cup · Group C",
       "status": "FT",
       "needsReview": false
     },
@@ -129,7 +129,7 @@
       "scoreA": 2,
       "scoreB": 0,
       "date": "2026-06-13",
-      "comp": "World Cup · Group D · Match 6 · 12:00 AM ET",
+      "comp": "World Cup · Group D",
       "status": "FT",
       "needsReview": true
     },
@@ -140,7 +140,7 @@
       "scoreA": 4,
       "scoreB": 1,
       "date": "2026-06-12",
-      "comp": "World Cup · Group D · Match 4 · 9:00 PM ET",
+      "comp": "World Cup · Group D",
       "status": "FT",
       "needsReview": true
     },
@@ -162,7 +162,7 @@
       "scoreA": 1,
       "scoreB": 1,
       "date": "2026-06-12",
-      "comp": "World Cup · Group B · Match 3 · 3:00 PM ET",
+      "comp": "World Cup · Group B",
       "status": "FT",
       "needsReview": false
     },
@@ -173,7 +173,7 @@
       "scoreA": 2,
       "scoreB": 1,
       "date": "2026-06-11",
-      "comp": "World Cup · Group A · Match 2 · 10:00 PM ET",
+      "comp": "World Cup · Group A",
       "status": "FT",
       "needsReview": true
     },
@@ -184,7 +184,7 @@
       "scoreA": 2,
       "scoreB": 0,
       "date": "2026-06-11",
-      "comp": "World Cup · Group A · Match 1 · 3:00 PM ET",
+      "comp": "World Cup · Group A",
       "status": "FT",
       "needsReview": false
     }
