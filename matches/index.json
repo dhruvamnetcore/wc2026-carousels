@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-15T18:51:55.641Z",
+  "updated": "2026-06-15T21:29:59.448Z",
   "matches": [
     {
       "file": "matches/2026-06-15-spain-vs-cape-verde.json",
@@ -11,6 +11,17 @@
       "comp": "World Cup · Group H",
       "status": "FT",
       "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-15-belgium-vs-egypt.json",
+      "teamA": "Belgium",
+      "teamB": "Egypt",
+      "scoreA": 1,
+      "scoreB": 1,
+      "date": "2026-06-15",
+      "comp": "World Cup · Group G",
+      "status": "FT",
+      "needsReview": false
     },
     {
       "file": "matches/2026-06-14-sweden-vs-tunisia.json",
