@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-15T13:45:50.065Z",
+  "updated": "2026-06-15T18:20:47.509Z",
   "matches": [
+    {
+      "file": "matches/2026-06-15-spain-vs-cape-verde.json",
+      "teamA": "Spain",
+      "teamB": "Cape Verde",
+      "scoreA": 0,
+      "scoreB": 0,
+      "date": "2026-06-15",
+      "comp": "World Cup · Group H · Match 14 · 12:00 PM ET",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-14-sweden-vs-tunisia.json",
       "teamA": "Sweden",
