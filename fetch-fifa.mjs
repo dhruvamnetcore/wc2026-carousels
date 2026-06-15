@@ -317,15 +317,12 @@ function etKickoff(iso) {
   } catch { return ""; }
 }
 
-/* competition label: "World Cup · Group A · Match 2 · 6:00 PM ET" */
-function buildComp(m, kickoffIso) {
+/* competition label: "World Cup · Group A" (knockouts fall back to the stage name) */
+function buildComp(m) {
   const parts = ["World Cup"];
   const g = desc(m.GroupName);
   if (g) parts.push(g);                                  // already "Group A"
-  if (m.MatchNumber != null) parts.push(`Match ${m.MatchNumber}`);
   else if (desc(m.StageName)) parts.push(desc(m.StageName));
-  const et = etKickoff(kickoffIso);
-  if (et) parts.push(et);                                // ET kickoff, not local TZ
   return parts.join(" · ");
 }
 
@@ -421,8 +418,40 @@ async function processMatch(cal) {
   // keep yellow cards too (useful + always available from FIFA)
   if (yc[0] || yc[1]) stats["Yellow cards"] = yc;
 
-  // MOTM: top scorer from raw goals (carry IdPlayer); when tied, prefer the winner
-  let motm = null;
+  const review = [];   // human-review flags surfaced in the dropdown + NEEDS_REVIEW.md
+
+  // ---- MOTM selection: official FIFA pick ▸ top scorer ▸ clean-sheet keeper ----
+  // Shared builder so every path produces the same card shape.
+  const buildCard = async (id, side, chips, posOverride) => {
+    if (!id) return null;
+    const name = await playerName(id);
+    const lp = [...(home.Players || []), ...(away.Players || [])].find(p => String(p.IdPlayer) === String(id));
+    let img = null;
+    const purl = lp?.PlayerPicture?.PictureUrl;
+    if (purl) img = await toDataUri(`${purl}?io=transform:fill,width:600`);
+    const extra = await tsdbPlayer(name);
+    if (!img && extra?.img) img = extra.img;
+    return {
+      name, team: side, rate: "",
+      pos: posOverride || extra?.pos || "", club: extra?.club || "", league: extra?.league || "",
+      number: lp?.ShirtNumber || extra?.number || "",
+      chips, ...(img ? { img } : {}),
+    };
+  };
+  // does FIFA expose an official Player of the Match? (field name unconfirmed — checked defensively)
+  const fifaMotmId = (() => {
+    for (const c of [d.ManOfTheMatch, d.BestPlayer, d.PlayerOfTheMatch, d.MatchAward, d.Award, d.BudweiserManOfTheMatch, d.PlayerOfTheMatchId]) {
+      if (!c) continue;
+      const id = c.IdPlayer || c.PlayerId || c.Id || (typeof c === "string" || typeof c === "number" ? c : null);
+      if (id) return String(id);
+    }
+    return null;
+  })();
+  if (process.env.DUMP_FIFA === "1") {
+    console.log(`  FIFA MOTM probe: ${fifaMotmId || "—"} | player[0] keys: ${Object.keys((home.Players || [])[0] || {}).join(",")}`);
+  }
+
+  // goal tally for the top-scorer path
   const tally = {};
   for (const [side, t] of [["A", home], ["B", away]])
     for (const g of t.Goals || []) {
@@ -433,28 +462,50 @@ async function processMatch(cal) {
   const scorers = Object.values(tally);
   const maxN = scorers.reduce((mx, s) => Math.max(mx, s.n), 0);
   const top = scorers.filter(s => s.n === maxN).sort((a, b) => (b.team === winner) - (a.team === winner))[0];
-  if (top) {
+
+  // find a team's goalkeeper from the FIFA lineup (defensive about the position field)
+  const findKeeper = (t) => (t.Players || []).find(p => {
+    const pos = p.Position ?? p.PlayerPosition ?? p.PositionName ?? p.Role ?? p.PlayerType;
+    if (typeof pos === "number") return pos === 0;                 // FIFA commonly uses 0 = GK
+    const s = String(pos || "").toLowerCase();
+    return s.includes("goal") || s.includes("keeper") || s === "gk";
+  }) || null;
+
+  let motm = null;
+  if (fifaMotmId) {
+    const side = (home.Players || []).some(p => String(p.IdPlayer) === fifaMotmId) ? "A" : "B";
+    motm = await buildCard(fifaMotmId, side, []);   // official pick; chips left for manual touch
+  }
+  if (!motm && top) {
     const name = await playerName(top.id);
-    // photo: FIFA lineup cutout by player id (reliable cutout, transparent PNG)
-    const lp = [...(home.Players || []), ...(away.Players || [])].find(p => String(p.IdPlayer) === String(top.id));
-    let img = null;
-    const purl = lp?.PlayerPicture?.PictureUrl;
-    if (purl) img = await toDataUri(`${purl}?io=transform:fill,width:600`);
-    // club / league / position from TheSportsDB by name (best-effort); photo fallback too
-    const extra = await tsdbPlayer(name);
-    if (!img && extra?.img) img = extra.img;
     const assists = moments.filter(m => m.what === `Assist: ${name}`).length;
     const chips = [["GOALS", String(top.n)]];
     if (assists) chips.push(["ASSISTS", String(assists)]);
-    motm = {
-      name, team: top.team, rate: "",
-      pos: extra?.pos || "", club: extra?.club || "", league: extra?.league || "",
-      number: lp?.ShirtNumber || extra?.number || "",
-      chips, ...(img ? { img } : {}),
-    };
+    motm = await buildCard(top.id, top.team, chips);
+  }
+  if (!motm) {
+    // goalless / no scorer → the keeper who kept a clean sheet, preferring the busier one
+    const csA = (Number(scoreB) || 0) === 0, csB = (Number(scoreA) || 0) === 0;
+    if (csA || csB) {
+      const sot = stats["Shots on target"] || raw["Shots on target"] || [0, 0];
+      const busyA = Number(sot[1]) || 0;   // shots on target A's keeper faced
+      const busyB = Number(sot[0]) || 0;   // shots on target B's keeper faced
+      const side = (csA && csB) ? (busyB >= busyA ? "B" : "A") : (csA ? "A" : "B");
+      const kp = findKeeper(side === "A" ? home : away);
+      if (kp) {
+        const savesArr = raw["Saves"] || raw["Goalkeeper Saves"] || null;
+        const facedSot = side === "A" ? busyA : busyB;
+        const chips = [];
+        if (savesArr) chips.push(["SAVES", String(side === "A" ? savesArr[0] : savesArr[1])]);
+        if (facedSot) chips.push(["SHOTS FACED", String(facedSot)]);
+        chips.push(["CLEAN SHEET", "✓"]);
+        motm = await buildCard(kp.IdPlayer, side, chips, "GK");
+        review.push("MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.");
+      }
+    }
   }
 
-  const comp = buildComp(d, cal.Date);
+  const comp = buildComp(d);
   const venue = [desc(d.Stadium?.Name), desc(d.Stadium?.CityName)].filter(Boolean).join(", ");
 
   const slides = ["cover", "moments"];
@@ -462,7 +513,6 @@ async function processMatch(cal) {
   if (motm) slides.push("motm");
 
   // review flags (should rarely trigger now that goals are complete)
-  const review = [];
   const total = (parseInt(scoreA) || 0) + (parseInt(scoreB) || 0);
   const tlGoals = moments.filter(m => m.type === "goal").length;
   if (tlGoals < total) review.push(`Timeline shows ${tlGoals} of ${total} goals — add the missing scorer(s) in the editor.`);
