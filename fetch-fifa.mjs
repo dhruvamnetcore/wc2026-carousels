@@ -506,10 +506,31 @@ try {
   }
 } catch (e) { console.error(`✗ FIFA calendar: ${e.message}`); }
 
+/* rebuild matches/index.json — the full archive list Carousel Studio's match
+   dropdown reads. One entry per saved match, newest first. */
+const indexEntries = [];
+for (const f of readdirSync("matches")) {
+  if (!f.endsWith(".json") || f === "latest.json" || f === "index.json") continue;
+  try {
+    const m = JSON.parse(readFileSync(`matches/${f}`, "utf8"));
+    indexEntries.push({
+      file: `matches/${f}`,
+      teamA: m.teamA, teamB: m.teamB,
+      scoreA: m.scoreA ?? null, scoreB: m.scoreB ?? null,
+      date: m.date || "", comp: m.comp || "",
+      status: m.status || "FT",
+      needsReview: Array.isArray(m.review) && m.review.length > 0,
+    });
+  } catch { /* skip unreadable */ }
+}
+indexEntries.sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.file).localeCompare(String(a.file)));
+writeFileSync("matches/index.json", JSON.stringify({ updated: new Date().toISOString(), matches: indexEntries }, null, 2));
+console.log(`✓ index.json rebuilt — ${indexEntries.length} match(es).`);
+
 /* rebuild NEEDS_REVIEW.md digest */
 const flagged = [];
 for (const f of readdirSync("matches")) {
-  if (!f.endsWith(".json") || f === "latest.json") continue;
+  if (!f.endsWith(".json") || f === "latest.json" || f === "index.json") continue;
   try { const m = JSON.parse(readFileSync(`matches/${f}`, "utf8")); if (m.review?.length) flagged.push(m); } catch { /* */ }
 }
 flagged.sort((a, b) => String(b.date).localeCompare(String(a.date)));
