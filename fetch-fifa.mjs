@@ -233,8 +233,53 @@ async function apiFootballStats(ourA, ourB, date) {
         else if (ev.type === "Card") events.push({ min, team: side, type: /red/i.test(ev.detail || "") ? "red" : "yellow", who: ev.player?.name || "", what: "" });
       }
     } catch { /* */ }
-    return { stats: out, events };
+    return { stats: out, events, fixtureId: id, homeIsA };
   } catch { return { stats: {}, events: [] }; }
+}
+
+/* ---- API-Football per-player stats for the MOTM (rating + top stats) ---- */
+function playerNameMatch(a, b) {
+  const na = stripAccents(norm(a)), nb = stripAccents(norm(b));
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  const la = na.split(/\s+/).pop(), lb = nb.split(/\s+/).pop();   // surnames
+  return !!(la && lb) && (la === lb || na.includes(lb) || nb.includes(la));
+}
+async function playerMatchStats(fixtureId, playerName) {
+  if (!AF_KEY || !fixtureId) return null;
+  try {
+    const H = { "x-apisports-key": AF_KEY };
+    const r = await (await fetch(`https://v3.football.api-sports.io/fixtures/players?fixture=${fixtureId}`, { headers: H })).json();
+    for (const tm of r.response || [])
+      for (const pl of tm.players || [])
+        if (playerNameMatch(pl.player?.name, playerName)) return pl.statistics?.[0] || null;
+    return null;
+  } catch { return null; }
+}
+/* choose the three most telling stats for the card (position-aware) */
+function chipsFromPlayerStats(st, isGK) {
+  const g = st.goals || {}, sh = st.shots || {}, ps = st.passes || {}, tk = st.tackles || {}, dr = st.dribbles || {}, du = st.duels || {};
+  const chips = [];
+  if (isGK) {
+    if (g.saves) chips.push(["SAVES", String(g.saves)]);
+    if ((g.conceded || 0) === 0) chips.push(["CLEAN SHEET", "✓"]);
+    if (ps.accuracy) chips.push(["PASS %", String(ps.accuracy).replace(/[^0-9]/g, "") + "%"]);
+    if (ps.total && chips.length < 3) chips.push(["PASSES", String(ps.total)]);
+  } else {
+    if (g.total) chips.push(["GOALS", String(g.total)]);          // lead with direct contributions
+    if (g.assists) chips.push(["ASSISTS", String(g.assists)]);
+    const pool = [
+      sh.on && ["SHOTS ON", String(sh.on)],
+      ps.key && ["KEY PASSES", String(ps.key)],
+      dr.success && ["DRIBBLES", String(dr.success)],
+      tk.total && ["TACKLES", String(tk.total)],
+      du.won && ["DUELS WON", String(du.won)],
+      ps.total && ["PASSES", String(ps.total)],
+      ps.accuracy && ["PASS %", String(ps.accuracy).replace(/[^0-9]/g, "") + "%"],
+    ].filter(Boolean);
+    for (const c of pool) { if (chips.length >= 3) break; chips.push(c); }
+  }
+  return chips.slice(0, 3);
 }
 
 // Highlightly possession comes as a decimal (0.47); convert ≤1 values to a percentage.
@@ -521,6 +566,22 @@ async function processMatch(cal) {
         motm = await buildCard(kp.IdPlayer, side, chips, "GK");
         review.push("MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.");
       }
+    }
+  }
+
+  // Enrich the card with the player's real per-match stats: a rating for the big
+  // number, and the three most telling stats as chips. Falls back to the basic
+  // chips above when API-Football doesn't cover this fixture/player.
+  if (motm && af.fixtureId) {
+    const pst = await playerMatchStats(af.fixtureId, motm.name);
+    if (pst) {
+      const rating = pst.games?.rating ? Math.round(parseFloat(pst.games.rating) * 10) / 10 : null;
+      if (rating) motm.rate = String(rating);
+      const richChips = chipsFromPlayerStats(pst, motm.pos === "GK");
+      if (richChips.length) motm.chips = richChips;
+      console.log(`  MOTM stats: ${motm.name} — rate ${motm.rate || "—"}, chips ${motm.chips.map(c => c.join(" ")).join(", ")}`);
+    } else {
+      console.log(`  MOTM stats: ${motm.name} — no per-player data (using basic chips)`);
     }
   }
 
