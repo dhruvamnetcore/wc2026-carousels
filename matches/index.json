@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T07:21:33.877Z",
+  "updated": "2026-06-16T07:29:41.528Z",
   "matches": [
     {
       "file": "matches/2026-06-15-spain-vs-cape-verde.json",
@@ -79,17 +79,6 @@
       "needsReview": false
     },
     {
-      "file": "matches/2026-06-14-haiti-vs-scotland.json",
-      "teamA": "Haiti",
-      "teamB": "Scotland",
-      "scoreA": 0,
-      "scoreB": 1,
-      "date": "2026-06-14",
-      "comp": "World Cup · Group C · Match 5",
-      "status": "FT",
-      "needsReview": false
-    },
-    {
       "file": "matches/2026-06-14-germany-vs-cura-ao.json",
       "teamA": "Germany",
       "teamB": "Curaçao",
@@ -97,28 +86,6 @@
       "scoreB": 1,
       "date": "2026-06-14",
       "comp": "World Cup · Group E",
-      "status": "FT",
-      "needsReview": false
-    },
-    {
-      "file": "matches/2026-06-14-australia-vs-t-rkiye.json",
-      "teamA": "Australia",
-      "teamB": "Türkiye",
-      "scoreA": 2,
-      "scoreB": 0,
-      "date": "2026-06-14",
-      "comp": "World Cup · Group D · Match 6",
-      "status": "FT",
-      "needsReview": false
-    },
-    {
-      "file": "matches/2026-06-13-usa-vs-paraguay.json",
-      "teamA": "USA",
-      "teamB": "Paraguay",
-      "scoreA": 4,
-      "scoreB": 1,
-      "date": "2026-06-13",
-      "comp": "World Cup · Group D · Match 4",
       "status": "FT",
       "needsReview": false
     },
@@ -176,17 +143,6 @@
       "comp": "World Cup · Group D",
       "status": "FT",
       "needsReview": true
-    },
-    {
-      "file": "matches/2026-06-12-south-korea-vs-czechia.json",
-      "teamA": "South Korea",
-      "teamB": "Czechia",
-      "scoreA": 2,
-      "scoreB": 1,
-      "date": "2026-06-12",
-      "comp": "World Cup · Group A · Match 2",
-      "status": "FT",
-      "needsReview": false
     },
     {
       "file": "matches/2026-06-12-canada-vs-bosnia-herzegovina.json",
