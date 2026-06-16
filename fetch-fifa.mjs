@@ -15,7 +15,7 @@
    Idempotent: already-written matches are skipped. Node 18+ (built-in fetch).
    ============================================================================ */
 
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, unlinkSync } from "node:fs";
 
 const CFG = JSON.parse(readFileSync(new URL("./watchlist.json", import.meta.url), "utf8"));
 const TZ = CFG.timezone || "UTC";
@@ -615,6 +615,14 @@ async function processMatch(cal) {
     ...(review.length ? { review } : {}),
     _source: "fifa",
   };
+  // Remove any stale copy of THIS match saved under a different date (the
+  // kickoff-date fix could leave a duplicate filename). Keep only this run's.
+  const slugTail = `-${slug(ourA)}-vs-${slug(ourB)}.json`;
+  for (const f of readdirSync("matches")) {
+    if (f.endsWith(slugTail) && `matches/${f}` !== file) {
+      try { unlinkSync(`matches/${f}`); console.log(`  ↳ removed stale duplicate matches/${f}`); } catch { /* */ }
+    }
+  }
   writeFileSync(file, JSON.stringify(out, null, 2));
   writeFileSync("matches/latest.json", JSON.stringify(out, null, 2));
   console.log(`✓ ${label}: ${out.scoreA}-${out.scoreB}, ${moments.length} moment(s) [${slides.join(", ")}]`);
@@ -661,8 +669,20 @@ for (const f of readdirSync("matches")) {
   } catch { /* skip unreadable */ }
 }
 indexEntries.sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.file).localeCompare(String(a.file)));
-writeFileSync("matches/index.json", JSON.stringify({ updated: new Date().toISOString(), matches: indexEntries }, null, 2));
-console.log(`✓ index.json rebuilt — ${indexEntries.length} match(es).`);
+
+// Safety net: collapse any same-match duplicates (same team-pair) that slipped
+// through, keeping the entry with the most complete data.
+const richness = e => (e.scoreA != null && e.scoreB != null ? 2 : 0) + (e.needsReview ? 0 : 3);
+const byPair = new Map();
+for (const e of indexEntries) {
+  const key = [e.teamA, e.teamB].map(s => norm(s)).sort().join("|");
+  const cur = byPair.get(key);
+  if (!cur || richness(e) > richness(cur)) byPair.set(key, e);
+}
+const deduped = [...byPair.values()].sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.file).localeCompare(String(a.file)));
+if (deduped.length < indexEntries.length) console.log(`  ↳ index deduped: ${indexEntries.length} → ${deduped.length} unique match(es).`);
+writeFileSync("matches/index.json", JSON.stringify({ updated: new Date().toISOString(), matches: deduped }, null, 2));
+console.log(`✓ index.json rebuilt — ${deduped.length} match(es).`);
 
 /* rebuild NEEDS_REVIEW.md digest */
 const flagged = [];
