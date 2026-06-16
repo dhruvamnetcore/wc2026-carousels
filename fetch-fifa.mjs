@@ -326,14 +326,29 @@ function buildComp(m) {
   return parts.join(" · ");
 }
 
+/* An own goal is listed under the team that BENEFITS, but the scoring player is
+   on the opposing roster. That roster mismatch is the most reliable signal (we
+   also honour any explicit FIFA own-goal flag). */
+function goalIsOwn(g, ownSet, oppSet) {
+  const explicit = g.OwnGoal === true || g.IsOwnGoal === true ||
+    /own/i.test(String(g.Type ?? g.IdGoalType ?? g.GoalType ?? ""));
+  const rosterBased = ownSet && ownSet.size > 0 &&
+    oppSet.has(String(g.IdPlayer)) && !ownSet.has(String(g.IdPlayer));
+  return explicit || rosterBased;
+}
+
 /* build the studio moments list from FIFA goals + red cards */
 async function buildMoments(home, away) {
   const evs = [];
+  const rosterA = new Set((home.Players || []).map(p => String(p.IdPlayer)));
+  const rosterB = new Set((away.Players || []).map(p => String(p.IdPlayer)));
   for (const [side, t] of [["A", home], ["B", away]]) {
+    const own = side === "A" ? rosterA : rosterB, opp = side === "A" ? rosterB : rosterA;
     for (const g of t.Goals || []) {
       const who = await playerName(g.IdPlayer);
-      const assist = g.IdAssistPlayer ? await playerName(g.IdAssistPlayer) : "";
-      evs.push({ min: minClean(g.Minute), team: side, type: "goal", who, what: assist ? `Assist: ${assist}` : "" });
+      const og = goalIsOwn(g, own, opp);
+      const assist = (!og && g.IdAssistPlayer) ? await playerName(g.IdAssistPlayer) : "";
+      evs.push({ min: minClean(g.Minute), team: side, type: og ? "og" : "goal", who, what: assist ? `Assist: ${assist}` : "" });
     }
     for (const bk of t.Bookings || []) {
       const card = Number(bk.Card);
@@ -451,10 +466,14 @@ async function processMatch(cal) {
     console.log(`  FIFA MOTM probe: ${fifaMotmId || "—"} | player[0] keys: ${Object.keys((home.Players || [])[0] || {}).join(",")}`);
   }
 
-  // goal tally for the top-scorer path
+  // goal tally for the top-scorer path (own goals never credit their scorer)
+  const rosterA = new Set((home.Players || []).map(p => String(p.IdPlayer)));
+  const rosterB = new Set((away.Players || []).map(p => String(p.IdPlayer)));
   const tally = {};
   for (const [side, t] of [["A", home], ["B", away]])
     for (const g of t.Goals || []) {
+      const own = side === "A" ? rosterA : rosterB, opp = side === "A" ? rosterB : rosterA;
+      if (goalIsOwn(g, own, opp)) continue;          // skip own goals — don't credit the scorer
       const id = g.IdPlayer || `${side}-${g.Minute}`;
       (tally[id] = tally[id] || { id: g.IdPlayer, team: side, n: 0 }).n++;
     }
