@@ -249,7 +249,14 @@ async function playerMatchStats(fixtureId, playerName) {
   if (!AF_KEY || !fixtureId) return null;
   try {
     const H = { "x-apisports-key": AF_KEY };
-    const r = await (await fetch(`https://v3.football.api-sports.io/fixtures/players?fixture=${fixtureId}`, { headers: H })).json();
+    const res = await fetch(`https://v3.football.api-sports.io/fixtures/players?fixture=${fixtureId}`, { headers: H });
+    const remaining = res.headers.get("x-ratelimit-requests-remaining") ?? res.headers.get("X-RateLimit-Requests-Remaining");
+    const r = await res.json();
+    const errs = r.errors && (Array.isArray(r.errors) ? r.errors.length : Object.keys(r.errors).length) ? r.errors : null;
+    if (res.status === 429 || errs) {
+      console.log(`  ⚠ API-Football per-player blocked (status ${res.status}, remaining today: ${remaining ?? "?"}): ${JSON.stringify(errs || "rate limited")}`);
+      return null;
+    }
     for (const tm of r.response || [])
       for (const pl of tm.players || [])
         if (playerNameMatch(pl.player?.name, playerName)) return pl.statistics?.[0] || null;
