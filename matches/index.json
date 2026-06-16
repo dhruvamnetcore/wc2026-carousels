@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-16T02:04:57.535Z",
+  "updated": "2026-06-16T07:03:29.358Z",
   "matches": [
     {
       "file": "matches/2026-06-15-spain-vs-cape-verde.json",
@@ -24,6 +24,17 @@
       "needsReview": false
     },
     {
+      "file": "matches/2026-06-15-iran-vs-new-zealand.json",
+      "teamA": "Iran",
+      "teamB": "New Zealand",
+      "scoreA": 2,
+      "scoreB": 2,
+      "date": "2026-06-15",
+      "comp": "World Cup · Group G",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
       "file": "matches/2026-06-15-belgium-vs-egypt.json",
       "teamA": "Belgium",
       "teamB": "Egypt",
@@ -32,7 +43,7 @@
       "date": "2026-06-15",
       "comp": "World Cup · Group G",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-14-sweden-vs-tunisia.json",

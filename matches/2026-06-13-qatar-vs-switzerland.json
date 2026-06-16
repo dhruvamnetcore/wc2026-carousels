@@ -59,9 +59,16 @@
     {
       "min": "90+4",
       "team": "A",
-      "type": "goal",
+      "type": "og",
       "who": "Miro MUHEIM",
       "what": ""
+    },
+    {
+      "min": "90+4",
+      "team": "A",
+      "type": "goal",
+      "who": "B. Khoukhi",
+      "what": "Assist: H. Al Amin"
     }
   ],
   "stats": {

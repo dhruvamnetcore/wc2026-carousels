@@ -2,6 +2,12 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Belgium 1–1 Egypt — 2026-06-15
+- Timeline shows 1 of 2 goals — add the missing scorer(s) in the editor.
+
+### Iran 2–2 New Zealand — 2026-06-15
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Spain 0–0 Cape Verde — 2026-06-15
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 
@@ -15,6 +21,7 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
 ### USA 4–1 Paraguay — 2026-06-12
+- Timeline shows 4 of 5 goals — add the missing scorer(s) in the editor.
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
 ### South Korea 2–1 Czechia — 2026-06-11
