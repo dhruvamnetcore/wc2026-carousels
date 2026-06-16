@@ -86,7 +86,7 @@
   "motm": {
     "name": "EMAM ASHOUR",
     "team": "B",
-    "rate": "",
+    "rate": "7.9",
     "pos": "MID",
     "club": "Al Ahly",
     "league": "Egyptian Premier League",
@@ -94,6 +94,14 @@
     "chips": [
       [
         "GOALS",
+        "1"
+      ],
+      [
+        "SHOTS ON",
+        "1"
+      ],
+      [
+        "KEY PASSES",
         "1"
       ]
     ],
