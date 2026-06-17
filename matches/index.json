@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T00:19:30.249Z",
+  "updated": "2026-06-17T05:22:03.628Z",
   "matches": [
     {
       "file": "matches/2026-06-16-iraq-vs-norway.json",
@@ -22,6 +22,17 @@
       "comp": "World Cup · Group I",
       "status": "FT",
       "needsReview": false
+    },
+    {
+      "file": "matches/2026-06-16-argentina-vs-algeria.json",
+      "teamA": "Argentina",
+      "teamB": "Algeria",
+      "scoreA": 3,
+      "scoreB": 0,
+      "date": "2026-06-16",
+      "comp": "World Cup · Group J",
+      "status": "FT",
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-15-spain-vs-cape-verde.json",

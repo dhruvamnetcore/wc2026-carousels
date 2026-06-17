@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Argentina 3–0 Algeria — 2026-06-16
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Iraq 1–4 Norway — 2026-06-16
 - Timeline shows 4 of 5 goals — add the missing scorer(s) in the editor.
 
