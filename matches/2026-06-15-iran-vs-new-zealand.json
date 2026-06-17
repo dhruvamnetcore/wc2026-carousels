@@ -6,6 +6,7 @@
   "venue": "Los Angeles Stadium, Los Angeles",
   "date": "2026-06-15",
   "comp": "World Cup · Group G",
+  "kickoff": "2026-06-16T01:00:00Z",
   "handle": "@fwc_2k26",
   "slides": [
     "cover",
@@ -80,9 +81,9 @@
     "name": "Elijah JUST",
     "team": "B",
     "rate": "",
-    "pos": "",
-    "club": "",
-    "league": "",
+    "pos": "FWD",
+    "club": "Motherwell",
+    "league": "Scottish Premier League",
     "number": 11,
     "chips": [
       [

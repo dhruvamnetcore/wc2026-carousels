@@ -5,6 +5,10 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 ### Argentina 3–0 Algeria — 2026-06-16
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
+### Austria 3–1 Jordan — 2026-06-16
+- Timeline shows 3 of 4 goals — add the missing scorer(s) in the editor.
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Iraq 1–4 Norway — 2026-06-16
 - Timeline shows 4 of 5 goals — add the missing scorer(s) in the editor.
 

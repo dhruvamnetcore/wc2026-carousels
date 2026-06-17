@@ -6,6 +6,7 @@
   "venue": "Miami Stadium, Miami",
   "date": "2026-06-15",
   "comp": "World Cup · Group H",
+  "kickoff": "2026-06-15T22:00:00Z",
   "handle": "@fwc_2k26",
   "slides": [
     "cover",
@@ -43,15 +44,15 @@
     ],
     "Shots on target": [
       3,
-      9
+      10
     ],
     "Possession": [
-      35,
-      65
+      33,
+      67
     ],
     "Passes completed": [
-      232,
-      502
+      322,
+      612
     ],
     "Offsides": [
       0,

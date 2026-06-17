@@ -6,6 +6,7 @@
   "venue": "Boston Stadium, Boston",
   "date": "2026-06-16",
   "comp": "World Cup · Group I",
+  "kickoff": "2026-06-16T22:00:00Z",
   "handle": "@fwc_2k26",
   "slides": [
     "cover",
@@ -71,8 +72,8 @@
       61
     ],
     "Passes completed": [
-      270,
-      472
+      334,
+      537
     ],
     "Offsides": [
       1,
@@ -87,9 +88,9 @@
     "name": "Erling HAALAND",
     "team": "B",
     "rate": "8.2",
-    "pos": "FWD",
-    "club": "Manchester City",
-    "league": "English Premier League",
+    "pos": "",
+    "club": "",
+    "league": "",
     "number": 9,
     "chips": [
       [

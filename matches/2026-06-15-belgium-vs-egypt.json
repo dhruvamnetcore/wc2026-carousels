@@ -6,6 +6,7 @@
   "venue": "Seattle Stadium, Seattle",
   "date": "2026-06-15",
   "comp": "World Cup · Group G",
+  "kickoff": "2026-06-15T19:00:00Z",
   "handle": "@fwc_2k26",
   "slides": [
     "cover",
@@ -71,8 +72,8 @@
       46
     ],
     "Passes completed": [
-      388,
-      322
+      455,
+      398
     ],
     "Offsides": [
       0,
@@ -86,7 +87,7 @@
   "motm": {
     "name": "EMAM ASHOUR",
     "team": "B",
-    "rate": "7.9",
+    "rate": "",
     "pos": "MID",
     "club": "Al Ahly",
     "league": "Egyptian Premier League",
@@ -94,14 +95,6 @@
     "chips": [
       [
         "GOALS",
-        "1"
-      ],
-      [
-        "SHOTS ON",
-        "1"
-      ],
-      [
-        "KEY PASSES",
         "1"
       ]
     ],
