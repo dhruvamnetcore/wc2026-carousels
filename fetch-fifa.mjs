@@ -45,31 +45,6 @@ async function fifa(path) {
   return r.json();
 }
 
-/* DEBUG (DUMP_FIFA=1): probe FIFA's likely per-player stats endpoints and print
-   what each returns, so we can see if FIFA serves player stats for free and in
-   what shape — then build a real parser from the confirmed structure. */
-let _shapeCaptured = false;
-async function probeFifaPlayerStats(cal, ourA, ourB, d, home, away) {
-  const id = cal.IdMatch, s = cal.IdSeason, st = cal.IdStage;
-  const grab = async (url) => {
-    try { const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/json" } }); if (!r.ok) return { __status: r.status }; return await r.json(); }
-    catch (e) { return { __err: e.message }; }
-  };
-  const tj = await grab(`${FIFA}/statistics/${COMP}/${s}/${st}/${id}/teams/${home.IdTeam}?language=en`);
-  const n = Array.isArray(tj.Results) ? tj.Results.length : (tj.__status ? `HTTP ${tj.__status}` : (tj.__err || "?"));
-  console.log(`  ⌕ FIFA stats — ${ourA} v ${ourB} (cov=${d.CoverageLevel}): teams Results=${n}`);
-  // Capture the exact JSON shape from the FIRST match that actually has stats.
-  if (!_shapeCaptured && Array.isArray(tj.Results) && tj.Results.length) {
-    _shapeCaptured = true;
-    console.log(`     [SHAPE] teams Results[0]: ${JSON.stringify(tj.Results[0]).slice(0, 1500)}`);
-    const pid = (home.Players || [])[0]?.IdPlayer;
-    if (pid) {
-      const pj = await grab(`${FIFA}/statistics/${COMP}/${s}/${st}/${id}/players/${pid}?language=en`);
-      console.log(`     [SHAPE] players/${pid}: ${JSON.stringify(pj.Results ?? pj).slice(0, 1500)}`);
-    }
-  }
-}
-
 /* download an image and inline it as a data: URI (self-contained for studio + render) */
 async function toDataUri(url) {
   try {
@@ -167,6 +142,90 @@ async function tsdbStats(ourA, ourB, date) {
      HIGHLIGHTLY_KEY  → highlightly.net (possession/passes/cards/shots)        ---- */
 const AF_KEY = process.env.APIFOOTBALL_KEY || process.env.API_FOOTBALL_KEY || "";
 const HL_KEY = process.env.HIGHLIGHTLY_KEY || process.env.HIGHLIGHTLY_API_KEY || "";
+const BDL_KEY = process.env.BALLDONTLIE_KEY || "";   // BALLDONTLIE FIFA WC API (GOAT tier) — official MOTM + per-player + team stats
+
+/* ---- BALLDONTLIE FIFA World Cup API ---------------------------------------
+   The only source we found with consistent per-match player AND team stats for
+   every fixture, plus an official Man-of-the-Match endpoint. Key-gated: with no
+   key the whole module is a no-op and we fall back to the free chain. ---------*/
+const BDL = "https://api.balldontlie.io/fifa/worldcup/v1";
+async function bdlGet(path) {
+  if (!BDL_KEY) return null;
+  try {
+    const r = await fetch(`${BDL}${path}`, { headers: { Authorization: BDL_KEY } });
+    if (!r.ok) { console.log(`  ⚠ BALLDONTLIE ${path} -> HTTP ${r.status}`); return null; }
+    return await r.json();
+  } catch (e) { console.log(`  ⚠ BALLDONTLIE ${path} -> ERR ${e.message}`); return null; }
+}
+let _bdlTeams = null;            // cached name→id map (the /teams endpoint is free tier)
+async function bdlTeamId(name) {
+  if (!_bdlTeams) {
+    _bdlTeams = {};
+    const j = await bdlGet(`/teams?seasons[]=2026`);
+    for (const t of j?.data || []) _bdlTeams[canon(t.name)] = t.id;
+  }
+  const c = canon(name);
+  if (_bdlTeams[c] != null) return _bdlTeams[c];
+  for (const [k, id] of Object.entries(_bdlTeams)) if (teamsMatch(k, name)) return id;  // alias-aware
+  return null;
+}
+// top-3 chips from a BALLDONTLIE player_match_stats row (position-aware)
+function bdlChips(st, isGK, cleanSheet) {
+  const chips = [];
+  if (isGK) {
+    if (st.saves) chips.push(["SAVES", String(st.saves)]);
+    if (cleanSheet) chips.push(["CLEAN SHEET", "✓"]);
+    if (st.passes_total && st.passes_accurate) chips.push(["PASS %", Math.round(st.passes_accurate / st.passes_total * 100) + "%"]);
+  } else {
+    if (st.goals) chips.push(["GOALS", String(st.goals)]);
+    if (st.assists) chips.push(["ASSISTS", String(st.assists)]);
+    const pool = [
+      st.shots_on_target && ["SHOTS ON", String(st.shots_on_target)],
+      st.key_passes && ["KEY PASSES", String(st.key_passes)],
+      st.dribbles_completed && ["DRIBBLES", String(st.dribbles_completed)],
+      st.tackles && ["TACKLES", String(st.tackles)],
+      st.duels_won && ["DUELS WON", String(st.duels_won)],
+      st.passes_total && ["PASSES", String(st.passes_total)],
+    ].filter(Boolean);
+    for (const c of pool) { if (chips.length >= 3) break; chips.push(c); }
+  }
+  return chips.slice(0, 3);
+}
+/* One call per match: resolve the BDL match, then pull team stats, per-player
+   stats, official best players, and a player-id→name map. Everything defensive. */
+async function bdlMatchData(ourA, ourB, scoreA, scoreB) {
+  const out = { found: false, stats: {}, players: [], best: [], names: {} };
+  if (!BDL_KEY) return out;
+  const idA = await bdlTeamId(ourA);
+  if (idA == null) return out;
+  const mj = await bdlGet(`/matches?team_ids[]=${idA}&seasons[]=2026&per_page=100`);
+  const match = (mj?.data || []).find(m =>
+    (m.home_team && teamsMatch(m.home_team.name, ourB)) || (m.away_team && teamsMatch(m.away_team.name, ourB)));
+  if (!match) return out;
+  out.found = true;
+  const mid = match.id;
+  const [ts, ps, bp, lu] = await Promise.all([
+    bdlGet(`/team_match_stats?match_ids[]=${mid}`),
+    bdlGet(`/player_match_stats?match_ids[]=${mid}&per_page=100`),
+    bdlGet(`/match_best_players?match_ids[]=${mid}`),
+    bdlGet(`/match_lineups?match_ids[]=${mid}&per_page=100`),
+  ]);
+  // team stats → our decided labels (home row = our A, away row = our B)
+  const rows = ts?.data || [];
+  const H = rows.find(r => r.is_home), A = rows.find(r => !r.is_home);
+  if (H && A) {
+    const pair = (h, a) => [Number(h) || 0, Number(a) || 0];
+    out.stats["Possession"] = pair(H.possession_pct, A.possession_pct);
+    out.stats["Shots on target"] = pair(H.shots_on_target, A.shots_on_target);
+    out.stats["Passes completed"] = pair(H.passes_accurate, A.passes_accurate);
+    out.stats["Offsides"] = pair(H.offsides, A.offsides);
+  }
+  out.players = ps?.data || [];
+  out.best = bp?.data || [];
+  for (const l of lu?.data || []) if (l.player?.id) out.names[l.player.id] = l.player.name;
+  for (const p of out.players) if (p.player_id && !out.names[p.player_id]) out.names[p.player_id] = "";
+  return out;
+}
 
 // map provider stat names → our decided labels
 function mapStatName(name) {
@@ -394,13 +453,14 @@ function etKickoff(iso) {
   } catch { return ""; }
 }
 
-/* competition label: "World Cup · Group A" (knockouts fall back to the stage name) */
+/* competition label, stage-led: "Group Stage · Group A" for group games,
+   or the knockout round name ("Round of 32", "Round of 16", "Final", …) */
 function buildComp(m) {
-  const parts = ["World Cup"];
   const g = desc(m.GroupName);
-  if (g) parts.push(g);                                  // already "Group A"
-  else if (desc(m.StageName)) parts.push(desc(m.StageName));
-  return parts.join(" · ");
+  const stage = desc(m.StageName);
+  if (g) return `Group Stage · ${g}`;     // group match
+  if (stage) return stage;                 // knockout — whatever FIFA calls the round
+  return "World Cup";                       // last-resort fallback
 }
 
 /* An own goal is listed under the team that BENEFITS, but the scoring player is
@@ -471,13 +531,15 @@ async function processMatch(cal) {
   const tsdb = await tsdbStats(ourA, ourB, date);
   const af = await apiFootballStats(ourA, ourB, date);
   const hl = await highlightlyStats(ourA, ourB, date);
+  const bdl = await bdlMatchData(ourA, ourB, scoreA, scoreB);   // key-gated; {} when no key/coverage
 
   // visible diagnostics in the Actions log so you can see if keys/data are working
   console.log(`  stats sources for ${ourA} v ${ourB}: ` +
-    `keys[AF:${AF_KEY ? "set" : "—"} HL:${HL_KEY ? "set" : "—"}] ` +
+    `keys[AF:${AF_KEY ? "set" : "—"} HL:${HL_KEY ? "set" : "—"} BDL:${BDL_KEY ? "set" : "—"}] ` +
     `tsdb{${Object.keys(tsdb).join(",") || "∅"}} ` +
     `apifootball{${Object.keys(af.stats).join(",") || "∅"}|ev:${af.events.length}} ` +
-    `highlightly{${Object.keys(hl.stats).join(",") || "∅"}|found:${hl.found ? "y" : "n"}}`);
+    `highlightly{${Object.keys(hl.stats).join(",") || "∅"}|found:${hl.found ? "y" : "n"}} ` +
+    `bdl{${Object.keys(bdl.stats).join(",") || "∅"}|found:${bdl.found ? "y" : "n"}|players:${bdl.players.length}}`);
 
   // If FIFA's bookings were sparse, supplement the timeline with events from
   // API-Football and Highlightly (reliable for cards). Dedupe by minute+team+type.
@@ -497,7 +559,7 @@ async function processMatch(cal) {
       moments = keep.slice(0, 10);
     }
   }
-  const raw = { ...tsdb, ...af.stats, ...hl.stats };   // later spreads win = richer sources override
+  const raw = { ...tsdb, ...af.stats, ...hl.stats, ...bdl.stats };   // BDL wins (most consistent), then HL, AF, tsdb
   const yc = [0, 0];
   [home, away].forEach((t, i) => (t.Bookings || []).forEach(bk => { if (Number(bk.Card) === 1) yc[i]++; }));
   const stats = {};
@@ -541,7 +603,6 @@ async function processMatch(cal) {
   })();
   if (process.env.DUMP_FIFA === "1") {
     console.log(`  FIFA MOTM probe: ${fifaMotmId || "—"} | player[0] keys: ${Object.keys((home.Players || [])[0] || {}).join(",")}`);
-    await probeFifaPlayerStats(cal, ourA, ourB, d, home, away);
   }
 
   // goal tally for the top-scorer path (own goals never credit their scorer)
@@ -569,7 +630,29 @@ async function processMatch(cal) {
   }) || null;
 
   let motm = null;
-  if (fifaMotmId) {
+  // 0. BALLDONTLIE official Man of the Match (authoritative; keeps FIFA photo by
+  //    matching the name back to FIFA's lineup). Covers every match BDL has.
+  if (bdl.found && bdl.best.length) {
+    const best = bdl.best.find(b => b.is_man_of_match) ||
+      bdl.best.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0))[0];
+    const name = best && bdl.names[best.player_id];
+    if (best && name) {
+      const side = best.is_home ? "A" : "B";
+      const fp = [...(home.Players || []), ...(away.Players || [])]
+        .find(p => playerNameMatch(p.PlayerName, name) || playerNameMatch(p.ShortName, name));
+      const isGK = fp && findKeeper(side === "A" ? home : away)?.IdPlayer === fp.IdPlayer;
+      const cs = side === "A" ? (Number(scoreB) || 0) === 0 : (Number(scoreA) || 0) === 0;
+      const pst = bdl.players.find(p => p.player_id === best.player_id);
+      const chips = pst ? bdlChips(pst, isGK, cs) : [];
+      motm = fp
+        ? await buildCard(fp.IdPlayer, side, chips, isGK ? "GK" : undefined)
+        : { name, team: side, rate: "", pos: "", club: "", league: "", number: "", chips };
+      const rating = pst?.rating ?? best.rating;
+      if (rating) motm.rate = String(Math.round(rating * 10) / 10);
+      console.log(`  MOTM (BALLDONTLIE official): ${motm.name} — rate ${motm.rate || "—"}, chips ${motm.chips.map(c => c.join(" ")).join(", ") || "—"}`);
+    }
+  }
+  if (!motm && fifaMotmId) {
     const side = (home.Players || []).some(p => String(p.IdPlayer) === fifaMotmId) ? "A" : "B";
     motm = await buildCard(fifaMotmId, side, []);   // official pick; chips left for manual touch
   }
