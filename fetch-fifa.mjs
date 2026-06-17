@@ -48,24 +48,26 @@ async function fifa(path) {
 /* DEBUG (DUMP_FIFA=1): probe FIFA's likely per-player stats endpoints and print
    what each returns, so we can see if FIFA serves player stats for free and in
    what shape — then build a real parser from the confirmed structure. */
-async function probeFifaPlayerStats(cal, ourA, ourB) {
-  const id = cal.IdMatch;
+async function probeFifaPlayerStats(cal, ourA, ourB, d, home, away) {
+  const id = cal.IdMatch, s = cal.IdSeason, st = cal.IdStage;
+  console.log(`  ⌕ FIFA probe — ${ourA} v ${ourB} (IdMatch=${id}):`);
+  // What does FIFA's match-detail actually contain? (look for any Statistics field)
+  console.log(`     detail top-level keys: ${Object.keys(d || {}).join(",")}`);
+  console.log(`     HomeTeam keys: ${Object.keys(home || {}).join(",")}`);
+  // Try the historical FIFA statistics endpoint patterns (team + player)
   const tries = [
-    `https://fdh-api.fifa.com/v1/stats/match/${id}/players.json`,
-    `https://fdh-api.fifa.com/v1/stats/match/${id}/teams.json`,
-    `${FIFA}/live/football/${COMP}/${cal.IdSeason}/${cal.IdStage}/${id}/players?language=en`,
-    `${FIFA}/stats/match/${id}/players?language=en`,
+    `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/teams/${home.IdTeam}?language=en`,
+    `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/players?language=en`,
+    `${FIFA}/live/football/${COMP}/${s}/${st}/${id}/statistics?language=en`,
+    `${FIFA}/statistics/players?idMatch=${id}&idCompetition=${COMP}&language=en`,
   ];
-  console.log(`  ⌕ FIFA player-stats probe — ${ourA} v ${ourB} (IdMatch=${id}):`);
   for (const url of tries) {
     try {
       const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/json" } });
       if (!r.ok) { console.log(`     ${url.replace(/^https?:\/\//, "")} -> HTTP ${r.status}`); continue; }
       const j = await r.json();
-      const top = Array.isArray(j) ? `array[${j.length}]` : Object.keys(j || {}).slice(0, 10).join(",");
-      const arr = Array.isArray(j) ? j : (j.players || j.Players || j.data || j.Results || j.stats || []);
-      const sample = (Array.isArray(arr) && arr[0]) ? " | item keys: " + Object.keys(arr[0]).slice(0, 14).join(",") : "";
-      console.log(`     ${url.replace(/^https?:\/\//, "")} -> OK {${top}}${sample}`);
+      const top = Array.isArray(j) ? `array[${j.length}]` : Object.keys(j || {}).slice(0, 12).join(",");
+      console.log(`     ${url.replace(/^https?:\/\//, "")} -> OK {${top}}`);
     } catch (e) { console.log(`     ${url.replace(/^https?:\/\//, "")} -> ERR ${e.message}`); }
   }
 }
@@ -541,7 +543,7 @@ async function processMatch(cal) {
   })();
   if (process.env.DUMP_FIFA === "1") {
     console.log(`  FIFA MOTM probe: ${fifaMotmId || "—"} | player[0] keys: ${Object.keys((home.Players || [])[0] || {}).join(",")}`);
-    await probeFifaPlayerStats(cal, ourA, ourB);
+    await probeFifaPlayerStats(cal, ourA, ourB, d, home, away);
   }
 
   // goal tally for the top-scorer path (own goals never credit their scorer)
