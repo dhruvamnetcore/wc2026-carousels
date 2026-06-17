@@ -48,25 +48,25 @@ async function fifa(path) {
 /* DEBUG (DUMP_FIFA=1): probe FIFA's likely per-player stats endpoints and print
    what each returns, so we can see if FIFA serves player stats for free and in
    what shape — then build a real parser from the confirmed structure. */
-let _deepDumped = false;
+let _shapeCaptured = false;
 async function probeFifaPlayerStats(cal, ourA, ourB, d, home, away) {
   const id = cal.IdMatch, s = cal.IdSeason, st = cal.IdStage;
-  console.log(`  ⌕ FIFA probe — ${ourA} v ${ourB} (IdMatch=${id}):`);
-  // The team-stats endpoint works (needs a team id). Capture its EXACT shape once,
-  // plus the per-player variant with a real player id, so we can build parsers.
-  if (!_deepDumped) {
-    _deepDumped = true;
+  const grab = async (url) => {
+    try { const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/json" } }); if (!r.ok) return { __status: r.status }; return await r.json(); }
+    catch (e) { return { __err: e.message }; }
+  };
+  const tj = await grab(`${FIFA}/statistics/${COMP}/${s}/${st}/${id}/teams/${home.IdTeam}?language=en`);
+  const n = Array.isArray(tj.Results) ? tj.Results.length : (tj.__status ? `HTTP ${tj.__status}` : (tj.__err || "?"));
+  console.log(`  ⌕ FIFA stats — ${ourA} v ${ourB} (cov=${d.CoverageLevel}): teams Results=${n}`);
+  // Capture the exact JSON shape from the FIRST match that actually has stats.
+  if (!_shapeCaptured && Array.isArray(tj.Results) && tj.Results.length) {
+    _shapeCaptured = true;
+    console.log(`     [SHAPE] teams Results[0]: ${JSON.stringify(tj.Results[0]).slice(0, 1500)}`);
     const pid = (home.Players || [])[0]?.IdPlayer;
-    const grab = async (label, url) => {
-      try {
-        const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/json" } });
-        if (!r.ok) { console.log(`     [dump] ${label} -> HTTP ${r.status}`); return; }
-        const txt = (await r.text()).slice(0, 1800);
-        console.log(`     [dump] ${label} -> ${txt}`);
-      } catch (e) { console.log(`     [dump] ${label} -> ERR ${e.message}`); }
-    };
-    await grab(`teams/${home.IdTeam}`, `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/teams/${home.IdTeam}?language=en`);
-    if (pid) await grab(`players/${pid}`, `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/players/${pid}?language=en`);
+    if (pid) {
+      const pj = await grab(`${FIFA}/statistics/${COMP}/${s}/${st}/${id}/players/${pid}?language=en`);
+      console.log(`     [SHAPE] players/${pid}: ${JSON.stringify(pj.Results ?? pj).slice(0, 1500)}`);
+    }
   }
 }
 
