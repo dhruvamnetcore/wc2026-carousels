@@ -48,27 +48,25 @@ async function fifa(path) {
 /* DEBUG (DUMP_FIFA=1): probe FIFA's likely per-player stats endpoints and print
    what each returns, so we can see if FIFA serves player stats for free and in
    what shape — then build a real parser from the confirmed structure. */
+let _deepDumped = false;
 async function probeFifaPlayerStats(cal, ourA, ourB, d, home, away) {
   const id = cal.IdMatch, s = cal.IdSeason, st = cal.IdStage;
   console.log(`  ⌕ FIFA probe — ${ourA} v ${ourB} (IdMatch=${id}):`);
-  // What does FIFA's match-detail actually contain? (look for any Statistics field)
-  console.log(`     detail top-level keys: ${Object.keys(d || {}).join(",")}`);
-  console.log(`     HomeTeam keys: ${Object.keys(home || {}).join(",")}`);
-  // Try the historical FIFA statistics endpoint patterns (team + player)
-  const tries = [
-    `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/teams/${home.IdTeam}?language=en`,
-    `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/players?language=en`,
-    `${FIFA}/live/football/${COMP}/${s}/${st}/${id}/statistics?language=en`,
-    `${FIFA}/statistics/players?idMatch=${id}&idCompetition=${COMP}&language=en`,
-  ];
-  for (const url of tries) {
-    try {
-      const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/json" } });
-      if (!r.ok) { console.log(`     ${url.replace(/^https?:\/\//, "")} -> HTTP ${r.status}`); continue; }
-      const j = await r.json();
-      const top = Array.isArray(j) ? `array[${j.length}]` : Object.keys(j || {}).slice(0, 12).join(",");
-      console.log(`     ${url.replace(/^https?:\/\//, "")} -> OK {${top}}`);
-    } catch (e) { console.log(`     ${url.replace(/^https?:\/\//, "")} -> ERR ${e.message}`); }
+  // The team-stats endpoint works (needs a team id). Capture its EXACT shape once,
+  // plus the per-player variant with a real player id, so we can build parsers.
+  if (!_deepDumped) {
+    _deepDumped = true;
+    const pid = (home.Players || [])[0]?.IdPlayer;
+    const grab = async (label, url) => {
+      try {
+        const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/json" } });
+        if (!r.ok) { console.log(`     [dump] ${label} -> HTTP ${r.status}`); return; }
+        const txt = (await r.text()).slice(0, 1800);
+        console.log(`     [dump] ${label} -> ${txt}`);
+      } catch (e) { console.log(`     [dump] ${label} -> ERR ${e.message}`); }
+    };
+    await grab(`teams/${home.IdTeam}`, `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/teams/${home.IdTeam}?language=en`);
+    if (pid) await grab(`players/${pid}`, `${FIFA}/statistics/${COMP}/${s}/${st}/${id}/players/${pid}?language=en`);
   }
 }
 
