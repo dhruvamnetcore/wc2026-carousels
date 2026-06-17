@@ -1,6 +1,17 @@
 {
-  "updated": "2026-06-16T23:00:21.233Z",
+  "updated": "2026-06-17T00:19:30.249Z",
   "matches": [
+    {
+      "file": "matches/2026-06-16-iraq-vs-norway.json",
+      "teamA": "Iraq",
+      "teamB": "Norway",
+      "scoreA": 1,
+      "scoreB": 4,
+      "date": "2026-06-16",
+      "comp": "World Cup · Group I",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-16-france-vs-senegal.json",
       "teamA": "France",

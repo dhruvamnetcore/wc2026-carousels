@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Iraq 1–4 Norway — 2026-06-16
+- Timeline shows 4 of 5 goals — add the missing scorer(s) in the editor.
+
 ### Belgium 1–1 Egypt — 2026-06-15
 - Timeline shows 1 of 2 goals — add the missing scorer(s) in the editor.
 
