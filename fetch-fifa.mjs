@@ -45,6 +45,31 @@ async function fifa(path) {
   return r.json();
 }
 
+/* DEBUG (DUMP_FIFA=1): probe FIFA's likely per-player stats endpoints and print
+   what each returns, so we can see if FIFA serves player stats for free and in
+   what shape — then build a real parser from the confirmed structure. */
+async function probeFifaPlayerStats(cal, ourA, ourB) {
+  const id = cal.IdMatch;
+  const tries = [
+    `https://fdh-api.fifa.com/v1/stats/match/${id}/players.json`,
+    `https://fdh-api.fifa.com/v1/stats/match/${id}/teams.json`,
+    `${FIFA}/live/football/${COMP}/${cal.IdSeason}/${cal.IdStage}/${id}/players?language=en`,
+    `${FIFA}/stats/match/${id}/players?language=en`,
+  ];
+  console.log(`  ⌕ FIFA player-stats probe — ${ourA} v ${ourB} (IdMatch=${id}):`);
+  for (const url of tries) {
+    try {
+      const r = await fetch(url, { headers: { "User-Agent": UA, "Accept": "application/json" } });
+      if (!r.ok) { console.log(`     ${url.replace(/^https?:\/\//, "")} -> HTTP ${r.status}`); continue; }
+      const j = await r.json();
+      const top = Array.isArray(j) ? `array[${j.length}]` : Object.keys(j || {}).slice(0, 10).join(",");
+      const arr = Array.isArray(j) ? j : (j.players || j.Players || j.data || j.Results || j.stats || []);
+      const sample = (Array.isArray(arr) && arr[0]) ? " | item keys: " + Object.keys(arr[0]).slice(0, 14).join(",") : "";
+      console.log(`     ${url.replace(/^https?:\/\//, "")} -> OK {${top}}${sample}`);
+    } catch (e) { console.log(`     ${url.replace(/^https?:\/\//, "")} -> ERR ${e.message}`); }
+  }
+}
+
 /* download an image and inline it as a data: URI (self-contained for studio + render) */
 async function toDataUri(url) {
   try {
@@ -516,6 +541,7 @@ async function processMatch(cal) {
   })();
   if (process.env.DUMP_FIFA === "1") {
     console.log(`  FIFA MOTM probe: ${fifaMotmId || "—"} | player[0] keys: ${Object.keys((home.Players || [])[0] || {}).join(",")}`);
+    await probeFifaPlayerStats(cal, ourA, ourB);
   }
 
   // goal tally for the top-scorer path (own goals never credit their scorer)
@@ -609,6 +635,7 @@ async function processMatch(cal) {
     teamA: ourA, teamB: ourB,
     scoreA: parseInt(scoreA), scoreB: parseInt(scoreB),
     venue, date, comp,
+    kickoff: String(cal.Date || cal.LocalDate || ""),   // full timestamp for precise "latest" ordering
     ...(CFG.handle ? { handle: CFG.handle } : {}),
     slides, moments, stats,
     ...(motm ? { motm } : {}),
@@ -623,8 +650,7 @@ async function processMatch(cal) {
       try { unlinkSync(`matches/${f}`); console.log(`  ↳ removed stale duplicate matches/${f}`); } catch { /* */ }
     }
   }
-  writeFileSync(file, JSON.stringify(out, null, 2));
-  writeFileSync("matches/latest.json", JSON.stringify(out, null, 2));
+  writeFileSync(file, JSON.stringify(out, null, 2));   // latest.json is written once, at the end, as the newest match
   console.log(`✓ ${label}: ${out.scoreA}-${out.scoreB}, ${moments.length} moment(s) [${slides.join(", ")}]`);
   if (review.length) console.log(`  ⚠ NEEDS REVIEW: ${review.join(" | ")}`);
   return true;
@@ -662,13 +688,15 @@ for (const f of readdirSync("matches")) {
       file: `matches/${f}`,
       teamA: m.teamA, teamB: m.teamB,
       scoreA: m.scoreA ?? null, scoreB: m.scoreB ?? null,
-      date: m.date || "", comp: m.comp || "",
+      date: m.date || "", kickoff: m.kickoff || m.date || "", comp: m.comp || "",
       status: m.status || "FT",
       needsReview: Array.isArray(m.review) && m.review.length > 0,
     });
   } catch { /* skip unreadable */ }
 }
-indexEntries.sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.file).localeCompare(String(a.file)));
+// newest first by actual kickoff time (falls back to date), so same-day games order correctly
+const byRecency = (a, b) => String(b.kickoff).localeCompare(String(a.kickoff)) || String(b.file).localeCompare(String(a.file));
+indexEntries.sort(byRecency);
 
 // Safety net: collapse any same-match duplicates (same team-pair) that slipped
 // through, keeping the entry with the most complete data.
@@ -679,10 +707,18 @@ for (const e of indexEntries) {
   const cur = byPair.get(key);
   if (!cur || richness(e) > richness(cur)) byPair.set(key, e);
 }
-const deduped = [...byPair.values()].sort((a, b) => String(b.date).localeCompare(String(a.date)) || String(b.file).localeCompare(String(a.file)));
+const deduped = [...byPair.values()].sort(byRecency);
 if (deduped.length < indexEntries.length) console.log(`  ↳ index deduped: ${indexEntries.length} → ${deduped.length} unique match(es).`);
 writeFileSync("matches/index.json", JSON.stringify({ updated: new Date().toISOString(), matches: deduped }, null, 2));
 console.log(`✓ index.json rebuilt — ${deduped.length} match(es).`);
+
+// latest.json = the genuinely most-recent match (by kickoff), so "Load latest match" is reliable
+if (deduped[0]) {
+  try {
+    writeFileSync("matches/latest.json", readFileSync(deduped[0].file, "utf8"));
+    console.log(`✓ latest.json → ${deduped[0].teamA} v ${deduped[0].teamB} (${deduped[0].date}).`);
+  } catch { /* */ }
+}
 
 /* rebuild NEEDS_REVIEW.md digest */
 const flagged = [];
