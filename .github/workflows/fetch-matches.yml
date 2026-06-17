@@ -12,6 +12,10 @@ on:
       backfill_days:
         description: "How many days back to scan (default 1)"
         default: "1"
+      dump_fifa:
+        description: "Probe FIFA's per-player stats endpoints and log what they return (debug)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -41,6 +45,7 @@ jobs:
           # one-time backfill controls (from the Run-workflow button)
           REFETCH: ${{ github.event.inputs.refetch == 'true' && '1' || '' }}
           BACKFILL_DAYS: ${{ github.event.inputs.backfill_days || '1' }}
+          DUMP_FIFA: ${{ github.event.inputs.dump_fifa == 'true' && '1' || '' }}
 
       - name: 2. Install renderer (Puppeteer)
         run: npm install
