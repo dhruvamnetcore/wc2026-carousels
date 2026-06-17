@@ -5,7 +5,7 @@
   "scoreB": 1,
   "venue": "San Francisco Bay Area Stadium, San Francisco Bay Area",
   "date": "2026-06-16",
-  "comp": "World Cup · Group J",
+  "comp": "Group Stage · Group J",
   "kickoff": "2026-06-17T04:00:00Z",
   "handle": "@fwc_2k26",
   "slides": [
@@ -81,9 +81,9 @@
     "name": "Marko ARNAUTOVIC",
     "team": "A",
     "rate": "",
-    "pos": "FWD",
-    "club": "Crvena Zvezda",
-    "league": "Serbian Super Liga",
+    "pos": "",
+    "club": "",
+    "league": "",
     "number": 7,
     "chips": [
       [

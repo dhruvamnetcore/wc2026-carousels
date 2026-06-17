@@ -5,7 +5,7 @@
   "scoreB": 0,
   "venue": "Kansas City Stadium, Kansas City",
   "date": "2026-06-16",
-  "comp": "World Cup · Group J",
+  "comp": "Group Stage · Group J",
   "kickoff": "2026-06-17T01:00:00Z",
   "handle": "@fwc_2k26",
   "slides": [
@@ -63,9 +63,9 @@
     "name": "Lionel MESSI",
     "team": "A",
     "rate": "",
-    "pos": "FWD",
-    "club": "Inter Miami",
-    "league": "American Major League Soccer",
+    "pos": "",
+    "club": "",
+    "league": "",
     "number": 10,
     "chips": [
       [

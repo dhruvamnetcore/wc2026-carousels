@@ -5,7 +5,7 @@
   "scoreB": 1,
   "venue": "New York/New Jersey Stadium, New Jersey",
   "date": "2026-06-16",
-  "comp": "World Cup · Group I",
+  "comp": "Group Stage · Group I",
   "kickoff": "2026-06-16T19:00:00Z",
   "handle": "@fwc_2k26",
   "slides": [
@@ -58,8 +58,8 @@
       47
     ],
     "Passes completed": [
-      575,
-      502
+      505,
+      430
     ],
     "Offsides": [
       1,
@@ -70,9 +70,9 @@
     "name": "Kylian MBAPPE",
     "team": "A",
     "rate": "8.2",
-    "pos": "FWD",
-    "club": "Real Madrid",
-    "league": "Spanish La Liga",
+    "pos": "",
+    "club": "",
+    "league": "",
     "number": 10,
     "chips": [
       [

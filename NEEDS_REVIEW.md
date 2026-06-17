@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Portugal 1–1 Congo DR — 2026-06-17
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Argentina 3–0 Algeria — 2026-06-16
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
@@ -14,12 +17,26 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 
 ### Belgium 1–1 Egypt — 2026-06-15
 - Timeline shows 1 of 2 goals — add the missing scorer(s) in the editor.
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
 ### Iran 2–2 New Zealand — 2026-06-15
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
+### Saudi Arabia 1–1 Uruguay — 2026-06-15
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Spain 0–0 Cape Verde — 2026-06-15
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Germany 7–1 Curaçao — 2026-06-14
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Ivory Coast 1–0 Ecuador — 2026-06-14
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Netherlands 2–2 Japan — 2026-06-14
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
 ### Sweden 5–1 Tunisia — 2026-06-14
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
@@ -27,7 +44,17 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 ### Australia 2–0 Türkiye — 2026-06-13
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
+### Brazil 1–1 Morocco — 2026-06-13
+- Stats not in the source — fill by hand: Possession, Passes completed, Offsides.
+
 ### Haiti 0–1 Scotland — 2026-06-13
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Qatar 1–1 Switzerland — 2026-06-13
+- Timeline shows 1 of 2 goals — add the missing scorer(s) in the editor.
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Canada 1–1 Bosnia & Herzegovina — 2026-06-12
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
 ### USA 4–1 Paraguay — 2026-06-12

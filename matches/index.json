@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-17T19:35:20.221Z",
+  "updated": "2026-06-17T20:49:36.573Z",
   "matches": [
     {
       "file": "matches/2026-06-17-portugal-vs-congo-dr.json",
@@ -9,9 +9,9 @@
       "scoreB": 1,
       "date": "2026-06-17",
       "kickoff": "2026-06-17T17:00:00Z",
-      "comp": "World Cup · Group K",
+      "comp": "Group Stage · Group K",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-16-austria-vs-jordan.json",
@@ -21,7 +21,7 @@
       "scoreB": 1,
       "date": "2026-06-16",
       "kickoff": "2026-06-17T04:00:00Z",
-      "comp": "World Cup · Group J",
+      "comp": "Group Stage · Group J",
       "status": "FT",
       "needsReview": true
     },
@@ -33,7 +33,7 @@
       "scoreB": 0,
       "date": "2026-06-16",
       "kickoff": "2026-06-17T01:00:00Z",
-      "comp": "World Cup · Group J",
+      "comp": "Group Stage · Group J",
       "status": "FT",
       "needsReview": true
     },
@@ -45,7 +45,7 @@
       "scoreB": 4,
       "date": "2026-06-16",
       "kickoff": "2026-06-16T22:00:00Z",
-      "comp": "World Cup · Group I",
+      "comp": "Group Stage · Group I",
       "status": "FT",
       "needsReview": true
     },
@@ -57,7 +57,7 @@
       "scoreB": 1,
       "date": "2026-06-16",
       "kickoff": "2026-06-16T19:00:00Z",
-      "comp": "World Cup · Group I",
+      "comp": "Group Stage · Group I",
       "status": "FT",
       "needsReview": false
     },
@@ -69,7 +69,7 @@
       "scoreB": 2,
       "date": "2026-06-15",
       "kickoff": "2026-06-16T01:00:00Z",
-      "comp": "World Cup · Group G",
+      "comp": "Group Stage · Group G",
       "status": "FT",
       "needsReview": true
     },
@@ -81,9 +81,9 @@
       "scoreB": 1,
       "date": "2026-06-15",
       "kickoff": "2026-06-15T22:00:00Z",
-      "comp": "World Cup · Group H",
+      "comp": "Group Stage · Group H",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-15-belgium-vs-egypt.json",
@@ -93,7 +93,7 @@
       "scoreB": 1,
       "date": "2026-06-15",
       "kickoff": "2026-06-15T19:00:00Z",
-      "comp": "World Cup · Group G",
+      "comp": "Group Stage · Group G",
       "status": "FT",
       "needsReview": true
     },
@@ -105,7 +105,7 @@
       "scoreB": 0,
       "date": "2026-06-15",
       "kickoff": "2026-06-15T16:00:00Z",
-      "comp": "World Cup · Group H",
+      "comp": "Group Stage · Group H",
       "status": "FT",
       "needsReview": true
     },
@@ -117,7 +117,7 @@
       "scoreB": 1,
       "date": "2026-06-14",
       "kickoff": "2026-06-15T02:00:00Z",
-      "comp": "World Cup · Group F",
+      "comp": "Group Stage · Group F",
       "status": "FT",
       "needsReview": true
     },
@@ -129,9 +129,9 @@
       "scoreB": 0,
       "date": "2026-06-14",
       "kickoff": "2026-06-14T23:00:00Z",
-      "comp": "World Cup · Group E",
+      "comp": "Group Stage · Group E",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-14-netherlands-vs-japan.json",
@@ -141,9 +141,9 @@
       "scoreB": 2,
       "date": "2026-06-14",
       "kickoff": "2026-06-14T20:00:00Z",
-      "comp": "World Cup · Group F",
+      "comp": "Group Stage · Group F",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-14-germany-vs-cura-ao.json",
@@ -153,9 +153,9 @@
       "scoreB": 1,
       "date": "2026-06-14",
       "kickoff": "2026-06-14T17:00:00Z",
-      "comp": "World Cup · Group E",
+      "comp": "Group Stage · Group E",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-13-australia-vs-t-rkiye.json",
@@ -165,7 +165,7 @@
       "scoreB": 0,
       "date": "2026-06-13",
       "kickoff": "2026-06-14T04:00:00Z",
-      "comp": "World Cup · Group D",
+      "comp": "Group Stage · Group D",
       "status": "FT",
       "needsReview": true
     },
@@ -177,7 +177,7 @@
       "scoreB": 1,
       "date": "2026-06-13",
       "kickoff": "2026-06-14T01:00:00Z",
-      "comp": "World Cup · Group C",
+      "comp": "Group Stage · Group C",
       "status": "FT",
       "needsReview": true
     },
@@ -189,9 +189,9 @@
       "scoreB": 1,
       "date": "2026-06-13",
       "kickoff": "2026-06-13T22:00:00Z",
-      "comp": "World Cup · Group C",
+      "comp": "Group Stage · Group C",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-13-qatar-vs-switzerland.json",
@@ -201,9 +201,9 @@
       "scoreB": 1,
       "date": "2026-06-13",
       "kickoff": "2026-06-13T19:00:00Z",
-      "comp": "World Cup · Group B",
+      "comp": "Group Stage · Group B",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-12-usa-vs-paraguay.json",
@@ -213,7 +213,7 @@
       "scoreB": 1,
       "date": "2026-06-12",
       "kickoff": "2026-06-13T01:00:00Z",
-      "comp": "World Cup · Group D",
+      "comp": "Group Stage · Group D",
       "status": "FT",
       "needsReview": true
     },
@@ -225,9 +225,9 @@
       "scoreB": 1,
       "date": "2026-06-12",
       "kickoff": "2026-06-12T19:00:00Z",
-      "comp": "World Cup · Group B",
+      "comp": "Group Stage · Group B",
       "status": "FT",
-      "needsReview": false
+      "needsReview": true
     },
     {
       "file": "matches/2026-06-11-south-korea-vs-czechia.json",
@@ -237,7 +237,7 @@
       "scoreB": 1,
       "date": "2026-06-11",
       "kickoff": "2026-06-12T02:00:00Z",
-      "comp": "World Cup · Group A",
+      "comp": "Group Stage · Group A",
       "status": "FT",
       "needsReview": true
     },
