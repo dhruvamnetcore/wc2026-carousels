@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-18T17:41:00.247Z",
+  "updated": "2026-06-18T20:09:09.993Z",
   "matches": [
+    {
+      "file": "matches/2026-06-18-czechia-vs-south-africa.json",
+      "teamA": "Czechia",
+      "teamB": "South Africa",
+      "scoreA": 1,
+      "scoreB": 1,
+      "date": "2026-06-18",
+      "kickoff": "2026-06-18T16:00:00Z",
+      "comp": "Group Stage · Group A",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-17-uzbekistan-vs-colombia.json",
       "teamA": "Uzbekistan",
