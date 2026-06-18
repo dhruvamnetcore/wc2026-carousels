@@ -5,6 +5,9 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 ### Portugal 1–1 Congo DR — 2026-06-17
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
+### Uzbekistan 1–3 Colombia — 2026-06-17
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Argentina 3–0 Algeria — 2026-06-16
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 

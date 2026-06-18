@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-18T01:59:54.201Z",
+  "updated": "2026-06-18T06:54:29.882Z",
   "matches": [
+    {
+      "file": "matches/2026-06-17-uzbekistan-vs-colombia.json",
+      "teamA": "Uzbekistan",
+      "teamB": "Colombia",
+      "scoreA": 1,
+      "scoreB": 3,
+      "date": "2026-06-17",
+      "kickoff": "2026-06-18T02:00:00Z",
+      "comp": "Group Stage · Group K",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-17-ghana-vs-panama.json",
       "teamA": "Ghana",
