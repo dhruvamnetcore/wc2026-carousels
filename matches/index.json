@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-17T23:16:03.579Z",
+  "updated": "2026-06-18T01:59:54.201Z",
   "matches": [
+    {
+      "file": "matches/2026-06-17-ghana-vs-panama.json",
+      "teamA": "Ghana",
+      "teamB": "Panama",
+      "scoreA": 1,
+      "scoreB": 0,
+      "date": "2026-06-17",
+      "kickoff": "2026-06-17T23:00:00Z",
+      "comp": "Group Stage · Group L",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-17-england-vs-croatia.json",
       "teamA": "England",
