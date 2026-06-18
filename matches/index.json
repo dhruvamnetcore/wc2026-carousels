@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-18T20:09:09.993Z",
+  "updated": "2026-06-18T22:28:56.432Z",
   "matches": [
+    {
+      "file": "matches/2026-06-18-switzerland-vs-bosnia-herzegovina.json",
+      "teamA": "Switzerland",
+      "teamB": "Bosnia & Herzegovina",
+      "scoreA": 4,
+      "scoreB": 1,
+      "date": "2026-06-18",
+      "kickoff": "2026-06-18T19:00:00Z",
+      "comp": "Group Stage · Group B",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-18-czechia-vs-south-africa.json",
       "teamA": "Czechia",
