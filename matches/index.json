@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-19T00:09:00.044Z",
+  "updated": "2026-06-19T05:31:42.658Z",
   "matches": [
+    {
+      "file": "matches/2026-06-18-mexico-vs-south-korea.json",
+      "teamA": "Mexico",
+      "teamB": "South Korea",
+      "scoreA": 1,
+      "scoreB": 0,
+      "date": "2026-06-18",
+      "kickoff": "2026-06-19T01:00:00Z",
+      "comp": "Group Stage · Group A",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-18-canada-vs-qatar.json",
       "teamA": "Canada",
