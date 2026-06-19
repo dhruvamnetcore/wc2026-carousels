@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Canada 6–0 Qatar — 2026-06-18
+- Timeline shows 5 of 6 goals — add the missing scorer(s) in the editor.
+
 ### Portugal 1–1 Congo DR — 2026-06-17
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 

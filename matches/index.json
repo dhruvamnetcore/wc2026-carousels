@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-18T22:28:56.432Z",
+  "updated": "2026-06-19T00:09:00.044Z",
   "matches": [
+    {
+      "file": "matches/2026-06-18-canada-vs-qatar.json",
+      "teamA": "Canada",
+      "teamB": "Qatar",
+      "scoreA": 6,
+      "scoreB": 0,
+      "date": "2026-06-18",
+      "kickoff": "2026-06-18T22:00:00Z",
+      "comp": "Group Stage · Group B",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-18-switzerland-vs-bosnia-herzegovina.json",
       "teamA": "Switzerland",
