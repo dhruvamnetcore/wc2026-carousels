@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-19T20:11:11.258Z",
+  "updated": "2026-06-19T21:41:04.929Z",
   "matches": [
+    {
+      "file": "matches/2026-06-19-usa-vs-australia.json",
+      "teamA": "USA",
+      "teamB": "Australia",
+      "scoreA": 2,
+      "scoreB": 0,
+      "date": "2026-06-19",
+      "kickoff": "2026-06-19T19:00:00Z",
+      "comp": "Group Stage · Group D",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-18-mexico-vs-south-korea.json",
       "teamA": "Mexico",
