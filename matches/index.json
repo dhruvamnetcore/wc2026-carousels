@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-20T21:58:44.350Z",
+  "updated": "2026-06-20T23:07:39.265Z",
   "matches": [
+    {
+      "file": "matches/2026-06-20-germany-vs-ivory-coast.json",
+      "teamA": "Germany",
+      "teamB": "Ivory Coast",
+      "scoreA": 2,
+      "scoreB": 1,
+      "date": "2026-06-20",
+      "kickoff": "2026-06-20T20:00:00Z",
+      "comp": "Group Stage · Group E",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-20-netherlands-vs-sweden.json",
       "teamA": "Netherlands",
