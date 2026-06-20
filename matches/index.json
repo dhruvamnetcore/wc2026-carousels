@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-20T03:37:28.016Z",
+  "updated": "2026-06-20T07:41:53.526Z",
   "matches": [
+    {
+      "file": "matches/2026-06-19-t-rkiye-vs-paraguay.json",
+      "teamA": "Türkiye",
+      "teamB": "Paraguay",
+      "scoreA": 0,
+      "scoreB": 1,
+      "date": "2026-06-19",
+      "kickoff": "2026-06-20T03:00:00Z",
+      "comp": "Group Stage · Group D",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-19-brazil-vs-haiti.json",
       "teamA": "Brazil",
