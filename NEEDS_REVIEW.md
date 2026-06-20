@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Brazil 3–0 Haiti — 2026-06-19
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### USA 2–0 Australia — 2026-06-19
 - Timeline shows 1 of 2 goals — add the missing scorer(s) in the editor.
 

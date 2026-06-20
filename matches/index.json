@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-19T23:59:08.812Z",
+  "updated": "2026-06-20T03:37:28.016Z",
   "matches": [
+    {
+      "file": "matches/2026-06-19-brazil-vs-haiti.json",
+      "teamA": "Brazil",
+      "teamB": "Haiti",
+      "scoreA": 3,
+      "scoreB": 0,
+      "date": "2026-06-19",
+      "kickoff": "2026-06-20T00:30:00Z",
+      "comp": "Group Stage · Group C",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-19-scotland-vs-morocco.json",
+      "teamA": "Scotland",
+      "teamB": "Morocco",
+      "scoreA": 0,
+      "scoreB": 1,
+      "date": "2026-06-19",
+      "kickoff": "2026-06-19T22:00:00Z",
+      "comp": "Group Stage · Group C",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-19-usa-vs-australia.json",
       "teamA": "USA",
