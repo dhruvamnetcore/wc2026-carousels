@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Spain 4–0 Saudi Arabia — 2026-06-21
+- Timeline shows 3 of 4 goals — add the missing scorer(s) in the editor.
+
 ### Ecuador 0–0 Curaçao — 2026-06-20
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.

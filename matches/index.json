@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-21T18:00:47.709Z",
+  "updated": "2026-06-21T20:09:43.225Z",
   "matches": [
+    {
+      "file": "matches/2026-06-21-spain-vs-saudi-arabia.json",
+      "teamA": "Spain",
+      "teamB": "Saudi Arabia",
+      "scoreA": 4,
+      "scoreB": 0,
+      "date": "2026-06-21",
+      "kickoff": "2026-06-21T16:00:00Z",
+      "comp": "Group Stage · Group H",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-20-tunisia-vs-japan.json",
       "teamA": "Tunisia",
