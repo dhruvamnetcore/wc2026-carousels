@@ -2,6 +2,13 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Ecuador 0–0 Curaçao — 2026-06-20
+- MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Tunisia 0–4 Japan — 2026-06-20
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Brazil 3–0 Haiti — 2026-06-19
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 

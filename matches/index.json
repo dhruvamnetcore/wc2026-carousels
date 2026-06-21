@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-21T01:44:43.062Z",
+  "updated": "2026-06-21T06:42:30.370Z",
   "matches": [
+    {
+      "file": "matches/2026-06-20-tunisia-vs-japan.json",
+      "teamA": "Tunisia",
+      "teamB": "Japan",
+      "scoreA": 0,
+      "scoreB": 4,
+      "date": "2026-06-20",
+      "kickoff": "2026-06-21T04:00:00Z",
+      "comp": "Group Stage · Group F",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-20-ecuador-vs-cura-ao.json",
+      "teamA": "Ecuador",
+      "teamB": "Curaçao",
+      "scoreA": 0,
+      "scoreB": 0,
+      "date": "2026-06-20",
+      "kickoff": "2026-06-21T00:00:00Z",
+      "comp": "Group Stage · Group E",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-20-germany-vs-ivory-coast.json",
       "teamA": "Germany",
