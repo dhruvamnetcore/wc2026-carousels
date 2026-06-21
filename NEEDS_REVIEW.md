@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Belgium 0–0 Iran — 2026-06-21
+- MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+
 ### Spain 4–0 Saudi Arabia — 2026-06-21
 - Timeline shows 3 of 4 goals — add the missing scorer(s) in the editor.
 

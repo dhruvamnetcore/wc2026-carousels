@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-21T20:09:43.225Z",
+  "updated": "2026-06-21T21:49:39.926Z",
   "matches": [
+    {
+      "file": "matches/2026-06-21-belgium-vs-iran.json",
+      "teamA": "Belgium",
+      "teamB": "Iran",
+      "scoreA": 0,
+      "scoreB": 0,
+      "date": "2026-06-21",
+      "kickoff": "2026-06-21T19:00:00Z",
+      "comp": "Group Stage · Group G",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-21-spain-vs-saudi-arabia.json",
       "teamA": "Spain",
