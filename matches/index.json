@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-22T16:26:19.941Z",
+  "updated": "2026-06-22T19:53:03.198Z",
   "matches": [
+    {
+      "file": "matches/2026-06-22-argentina-vs-austria.json",
+      "teamA": "Argentina",
+      "teamB": "Austria",
+      "scoreA": 2,
+      "scoreB": 0,
+      "date": "2026-06-22",
+      "kickoff": "2026-06-22T17:00:00Z",
+      "comp": "Group Stage · Group J",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-21-new-zealand-vs-egypt.json",
       "teamA": "New Zealand",
