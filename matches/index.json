@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-21T22:59:25.847Z",
+  "updated": "2026-06-22T00:12:19.018Z",
   "matches": [
+    {
+      "file": "matches/2026-06-21-uruguay-vs-cape-verde.json",
+      "teamA": "Uruguay",
+      "teamB": "Cape Verde",
+      "scoreA": 2,
+      "scoreB": 2,
+      "date": "2026-06-21",
+      "kickoff": "2026-06-21T22:00:00Z",
+      "comp": "Group Stage · Group H",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-21-belgium-vs-iran.json",
       "teamA": "Belgium",
