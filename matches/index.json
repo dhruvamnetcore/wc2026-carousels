@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-22T00:12:19.018Z",
+  "updated": "2026-06-22T05:38:26.619Z",
   "matches": [
+    {
+      "file": "matches/2026-06-21-new-zealand-vs-egypt.json",
+      "teamA": "New Zealand",
+      "teamB": "Egypt",
+      "scoreA": 1,
+      "scoreB": 3,
+      "date": "2026-06-21",
+      "kickoff": "2026-06-22T01:00:00Z",
+      "comp": "Group Stage · Group G",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-21-uruguay-vs-cape-verde.json",
       "teamA": "Uruguay",
