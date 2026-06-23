@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-23T16:46:09.290Z",
+  "updated": "2026-06-23T19:02:03.041Z",
   "matches": [
+    {
+      "file": "matches/2026-06-23-portugal-vs-uzbekistan.json",
+      "teamA": "Portugal",
+      "teamB": "Uzbekistan",
+      "scoreA": 5,
+      "scoreB": 0,
+      "date": "2026-06-23",
+      "kickoff": "2026-06-23T17:00:00Z",
+      "comp": "Group Stage · Group K",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-22-jordan-vs-algeria.json",
       "teamA": "Jordan",

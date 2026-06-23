@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Portugal 5–0 Uzbekistan — 2026-06-23
+- Timeline shows 4 of 5 goals — add the missing scorer(s) in the editor.
+
 ### Jordan 1–2 Algeria — 2026-06-22
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
