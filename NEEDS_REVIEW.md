@@ -2,6 +2,12 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Jordan 1–2 Algeria — 2026-06-22
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Norway 3–2 Senegal — 2026-06-22
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Belgium 0–0 Iran — 2026-06-21
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 

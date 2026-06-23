@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-23T01:28:14.359Z",
+  "updated": "2026-06-23T05:38:39.544Z",
   "matches": [
+    {
+      "file": "matches/2026-06-22-jordan-vs-algeria.json",
+      "teamA": "Jordan",
+      "teamB": "Algeria",
+      "scoreA": 1,
+      "scoreB": 2,
+      "date": "2026-06-22",
+      "kickoff": "2026-06-23T03:00:00Z",
+      "comp": "Group Stage · Group J",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-22-norway-vs-senegal.json",
+      "teamA": "Norway",
+      "teamB": "Senegal",
+      "scoreA": 3,
+      "scoreB": 2,
+      "date": "2026-06-22",
+      "kickoff": "2026-06-23T00:00:00Z",
+      "comp": "Group Stage · Group I",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-22-france-vs-iraq.json",
       "teamA": "France",
