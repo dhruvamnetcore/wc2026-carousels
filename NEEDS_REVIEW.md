@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### England 0–0 Ghana — 2026-06-23
+- MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+
 ### Portugal 5–0 Uzbekistan — 2026-06-23
 - Timeline shows 4 of 5 goals — add the missing scorer(s) in the editor.
 

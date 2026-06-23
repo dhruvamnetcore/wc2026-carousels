@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-23T21:11:03.832Z",
+  "updated": "2026-06-23T22:46:48.605Z",
   "matches": [
+    {
+      "file": "matches/2026-06-23-england-vs-ghana.json",
+      "teamA": "England",
+      "teamB": "Ghana",
+      "scoreA": 0,
+      "scoreB": 0,
+      "date": "2026-06-23",
+      "kickoff": "2026-06-23T20:00:00Z",
+      "comp": "Group Stage · Group L",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-23-portugal-vs-uzbekistan.json",
       "teamA": "Portugal",
