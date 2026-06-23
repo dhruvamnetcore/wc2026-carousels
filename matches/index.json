@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-22T23:11:19.199Z",
+  "updated": "2026-06-23T01:28:14.359Z",
   "matches": [
+    {
+      "file": "matches/2026-06-22-france-vs-iraq.json",
+      "teamA": "France",
+      "teamB": "Iraq",
+      "scoreA": 3,
+      "scoreB": 0,
+      "date": "2026-06-22",
+      "kickoff": "2026-06-22T21:00:00Z",
+      "comp": "Group Stage · Group I",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-22-argentina-vs-austria.json",
       "teamA": "Argentina",
