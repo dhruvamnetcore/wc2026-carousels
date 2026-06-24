@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-24T19:08:23.885Z",
+  "updated": "2026-06-24T21:07:50.831Z",
   "matches": [
+    {
+      "file": "matches/2026-06-24-switzerland-vs-canada.json",
+      "teamA": "Switzerland",
+      "teamB": "Canada",
+      "scoreA": 2,
+      "scoreB": 1,
+      "date": "2026-06-24",
+      "kickoff": "2026-06-24T19:00:00Z",
+      "comp": "Group Stage · Group B",
+      "status": "FT",
+      "needsReview": false
+    },
+    {
+      "file": "matches/2026-06-24-bosnia-herzegovina-vs-qatar.json",
+      "teamA": "Bosnia & Herzegovina",
+      "teamB": "Qatar",
+      "scoreA": 3,
+      "scoreB": 1,
+      "date": "2026-06-24",
+      "kickoff": "2026-06-24T19:00:00Z",
+      "comp": "Group Stage · Group B",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-23-colombia-vs-congo-dr.json",
       "teamA": "Colombia",
