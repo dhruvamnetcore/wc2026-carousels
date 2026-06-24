@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Colombia 1–0 Congo DR — 2026-06-23
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### England 0–0 Ghana — 2026-06-23
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 

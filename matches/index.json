@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-24T02:08:44.384Z",
+  "updated": "2026-06-24T06:28:01.228Z",
   "matches": [
+    {
+      "file": "matches/2026-06-23-colombia-vs-congo-dr.json",
+      "teamA": "Colombia",
+      "teamB": "Congo DR",
+      "scoreA": 1,
+      "scoreB": 0,
+      "date": "2026-06-23",
+      "kickoff": "2026-06-24T02:00:00Z",
+      "comp": "Group Stage · Group K",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-23-panama-vs-croatia.json",
       "teamA": "Panama",
