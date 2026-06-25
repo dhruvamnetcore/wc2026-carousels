@@ -5,6 +5,9 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 ### Bosnia & Herzegovina 3–1 Qatar — 2026-06-24
 - Timeline shows 3 of 4 goals — add the missing scorer(s) in the editor.
 
+### Morocco 4–2 Haiti — 2026-06-24
+- Timeline shows 5 of 6 goals — add the missing scorer(s) in the editor.
+
 ### Colombia 1–0 Congo DR — 2026-06-23
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
