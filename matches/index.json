@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-25T23:49:49.320Z",
+  "updated": "2026-06-26T02:10:14.483Z",
   "matches": [
+    {
+      "file": "matches/2026-06-25-tunisia-vs-netherlands.json",
+      "teamA": "Tunisia",
+      "teamB": "Netherlands",
+      "scoreA": 1,
+      "scoreB": 3,
+      "date": "2026-06-25",
+      "kickoff": "2026-06-25T23:00:00Z",
+      "comp": "Group Stage · Group F",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-25-japan-vs-sweden.json",
+      "teamA": "Japan",
+      "teamB": "Sweden",
+      "scoreA": 1,
+      "scoreB": 1,
+      "date": "2026-06-25",
+      "kickoff": "2026-06-25T23:00:00Z",
+      "comp": "Group Stage · Group F",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-25-ecuador-vs-germany.json",
       "teamA": "Ecuador",

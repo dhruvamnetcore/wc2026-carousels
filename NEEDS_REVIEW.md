@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Tunisia 1–3 Netherlands — 2026-06-25
+- Timeline shows 3 of 4 goals — add the missing scorer(s) in the editor.
+
 ### Bosnia & Herzegovina 3–1 Qatar — 2026-06-24
 - Timeline shows 3 of 4 goals — add the missing scorer(s) in the editor.
 
