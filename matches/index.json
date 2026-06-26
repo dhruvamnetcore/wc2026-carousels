@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-26T21:02:24.612Z",
+  "updated": "2026-06-26T22:41:16.619Z",
   "matches": [
+    {
+      "file": "matches/2026-06-26-senegal-vs-iraq.json",
+      "teamA": "Senegal",
+      "teamB": "Iraq",
+      "scoreA": 5,
+      "scoreB": 0,
+      "date": "2026-06-26",
+      "kickoff": "2026-06-26T19:00:00Z",
+      "comp": "Group Stage · Group I",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-26-norway-vs-france.json",
       "teamA": "Norway",
