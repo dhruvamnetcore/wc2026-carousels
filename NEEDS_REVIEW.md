@@ -2,6 +2,13 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Paraguay 0–0 Australia — 2026-06-25
+- MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Türkiye 3–2 USA — 2026-06-25
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Tunisia 1–3 Netherlands — 2026-06-25
 - Timeline shows 3 of 4 goals — add the missing scorer(s) in the editor.
 
