@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-26T19:14:12.564Z",
+  "updated": "2026-06-26T21:02:24.612Z",
   "matches": [
+    {
+      "file": "matches/2026-06-26-norway-vs-france.json",
+      "teamA": "Norway",
+      "teamB": "France",
+      "scoreA": 1,
+      "scoreB": 4,
+      "date": "2026-06-26",
+      "kickoff": "2026-06-26T19:00:00Z",
+      "comp": "Group Stage · Group I",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-25-t-rkiye-vs-usa.json",
       "teamA": "Türkiye",
