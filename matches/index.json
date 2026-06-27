@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-27T22:53:37.133Z",
+  "updated": "2026-06-27T23:53:46.618Z",
   "matches": [
+    {
+      "file": "matches/2026-06-27-panama-vs-england.json",
+      "teamA": "Panama",
+      "teamB": "England",
+      "scoreA": 0,
+      "scoreB": 2,
+      "date": "2026-06-27",
+      "kickoff": "2026-06-27T21:00:00Z",
+      "comp": "Group Stage · Group L",
+      "status": "FT",
+      "needsReview": false
+    },
+    {
+      "file": "matches/2026-06-27-croatia-vs-ghana.json",
+      "teamA": "Croatia",
+      "teamB": "Ghana",
+      "scoreA": 2,
+      "scoreB": 1,
+      "date": "2026-06-27",
+      "kickoff": "2026-06-27T21:00:00Z",
+      "comp": "Group Stage · Group L",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-26-new-zealand-vs-belgium.json",
       "teamA": "New Zealand",
