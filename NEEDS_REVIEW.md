@@ -6,6 +6,12 @@ _Auto-generated each run. These matches have data gaps — open them in Carousel
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
+### Egypt 1–1 Iran — 2026-06-26
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### New Zealand 1–5 Belgium — 2026-06-26
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Uruguay 0–1 Spain — 2026-06-26
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 

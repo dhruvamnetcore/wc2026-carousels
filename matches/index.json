@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-27T02:05:08.140Z",
+  "updated": "2026-06-27T06:06:56.735Z",
   "matches": [
+    {
+      "file": "matches/2026-06-26-new-zealand-vs-belgium.json",
+      "teamA": "New Zealand",
+      "teamB": "Belgium",
+      "scoreA": 1,
+      "scoreB": 5,
+      "date": "2026-06-26",
+      "kickoff": "2026-06-27T03:00:00Z",
+      "comp": "Group Stage · Group G",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-26-egypt-vs-iran.json",
+      "teamA": "Egypt",
+      "teamB": "Iran",
+      "scoreA": 1,
+      "scoreB": 1,
+      "date": "2026-06-26",
+      "kickoff": "2026-06-27T03:00:00Z",
+      "comp": "Group Stage · Group G",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-26-uruguay-vs-spain.json",
       "teamA": "Uruguay",
