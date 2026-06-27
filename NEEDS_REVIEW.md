@@ -2,6 +2,13 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Cape Verde 0–0 Saudi Arabia — 2026-06-26
+- MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Uruguay 0–1 Spain — 2026-06-26
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Paraguay 0–0 Australia — 2026-06-25
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.

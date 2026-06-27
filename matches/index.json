@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-26T23:54:03.460Z",
+  "updated": "2026-06-27T02:05:08.140Z",
   "matches": [
+    {
+      "file": "matches/2026-06-26-uruguay-vs-spain.json",
+      "teamA": "Uruguay",
+      "teamB": "Spain",
+      "scoreA": 0,
+      "scoreB": 1,
+      "date": "2026-06-26",
+      "kickoff": "2026-06-27T00:00:00Z",
+      "comp": "Group Stage · Group H",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-26-cape-verde-vs-saudi-arabia.json",
+      "teamA": "Cape Verde",
+      "teamB": "Saudi Arabia",
+      "scoreA": 0,
+      "scoreB": 0,
+      "date": "2026-06-26",
+      "kickoff": "2026-06-27T00:00:00Z",
+      "comp": "Group Stage · Group H",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-26-senegal-vs-iraq.json",
       "teamA": "Senegal",
