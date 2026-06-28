@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-28T20:39:35.204Z",
+  "updated": "2026-06-28T21:53:10.527Z",
   "matches": [
+    {
+      "file": "matches/2026-06-28-south-africa-vs-canada.json",
+      "teamA": "South Africa",
+      "teamB": "Canada",
+      "scoreA": 0,
+      "scoreB": 1,
+      "date": "2026-06-28",
+      "kickoff": "2026-06-28T19:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-27-jordan-vs-argentina.json",
       "teamA": "Jordan",
