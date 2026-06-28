@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-27T23:53:46.618Z",
+  "updated": "2026-06-28T02:17:44.895Z",
   "matches": [
+    {
+      "file": "matches/2026-06-27-congo-dr-vs-uzbekistan.json",
+      "teamA": "Congo DR",
+      "teamB": "Uzbekistan",
+      "scoreA": 3,
+      "scoreB": 1,
+      "date": "2026-06-27",
+      "kickoff": "2026-06-27T23:30:00Z",
+      "comp": "Group Stage · Group K",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-27-colombia-vs-portugal.json",
+      "teamA": "Colombia",
+      "teamB": "Portugal",
+      "scoreA": 0,
+      "scoreB": 0,
+      "date": "2026-06-27",
+      "kickoff": "2026-06-27T23:30:00Z",
+      "comp": "Group Stage · Group K",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-27-panama-vs-england.json",
       "teamA": "Panama",
