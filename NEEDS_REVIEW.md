@@ -2,11 +2,17 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Algeria 3–3 Austria — 2026-06-27
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Colombia 0–0 Portugal — 2026-06-27
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
 ### Congo DR 3–1 Uzbekistan — 2026-06-27
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
+### Jordan 1–3 Argentina — 2026-06-27
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
 ### Cape Verde 0–0 Saudi Arabia — 2026-06-26

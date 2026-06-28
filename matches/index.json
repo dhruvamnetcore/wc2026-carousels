@@ -1,6 +1,30 @@
 {
-  "updated": "2026-06-28T02:17:44.895Z",
+  "updated": "2026-06-28T06:41:22.350Z",
   "matches": [
+    {
+      "file": "matches/2026-06-27-jordan-vs-argentina.json",
+      "teamA": "Jordan",
+      "teamB": "Argentina",
+      "scoreA": 1,
+      "scoreB": 3,
+      "date": "2026-06-27",
+      "kickoff": "2026-06-28T02:00:00Z",
+      "comp": "Group Stage · Group J",
+      "status": "FT",
+      "needsReview": true
+    },
+    {
+      "file": "matches/2026-06-27-algeria-vs-austria.json",
+      "teamA": "Algeria",
+      "teamB": "Austria",
+      "scoreA": 3,
+      "scoreB": 3,
+      "date": "2026-06-27",
+      "kickoff": "2026-06-28T02:00:00Z",
+      "comp": "Group Stage · Group J",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-27-congo-dr-vs-uzbekistan.json",
       "teamA": "Congo DR",
