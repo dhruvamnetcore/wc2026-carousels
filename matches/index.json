@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-29T18:58:01.268Z",
+  "updated": "2026-06-29T20:48:04.530Z",
   "matches": [
+    {
+      "file": "matches/2026-06-29-brazil-vs-japan.json",
+      "teamA": "Brazil",
+      "teamB": "Japan",
+      "scoreA": 2,
+      "scoreB": 1,
+      "date": "2026-06-29",
+      "kickoff": "2026-06-29T17:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-28-south-africa-vs-canada.json",
       "teamA": "South Africa",
