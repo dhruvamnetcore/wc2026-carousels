@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-29T22:03:34.897Z",
+  "updated": "2026-06-29T23:32:08.548Z",
   "matches": [
+    {
+      "file": "matches/2026-06-29-germany-vs-paraguay.json",
+      "teamA": "Germany",
+      "teamB": "Paraguay",
+      "scoreA": 1,
+      "scoreB": 1,
+      "date": "2026-06-29",
+      "kickoff": "2026-06-29T20:30:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-29-brazil-vs-japan.json",
       "teamA": "Brazil",
