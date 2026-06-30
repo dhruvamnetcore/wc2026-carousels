@@ -478,7 +478,27 @@ function goalIsOwn(g, ownSet, oppSet) {
 }
 
 /* build the studio moments list from FIFA goals + red cards */
-async function buildMoments(home, away) {
+/* Cards from FIFA's timeline / play-by-play — carries the NAME for every booking,
+   including coaches & staff (whom the bookings summary lists with IdPlayer:null).
+   This matches what the official FIFA live blog shows. Returns null on failure so
+   buildMoments falls back to the bookings summary. */
+async function fifaCardsFromTimeline(season, stage, match, homeIdTeam) {
+  try {
+    const tl = await fifa(`timelines/${COMP}/${season}/${stage}/${match}?language=en`);
+    const out = [];
+    for (const e of tl.Event || []) {
+      const label = ((e.TypeLocalized || [])[0] || {}).Description || "";
+      if (!/card/i.test(label)) continue;                          // bookings only
+      const type = (/red/i.test(label) || /second/i.test(label)) ? "red" : "yellow";
+      const desc = ((e.EventDescription || [])[0] || {}).Description || "";
+      const who = desc.split(" (")[0].trim();                      // "Andres CUBAS (Paraguay) is booked…" -> "Andres CUBAS"
+      out.push({ min: minClean(e.MatchMinute), team: String(e.IdTeam) === String(homeIdTeam) ? "A" : "B", type, who, what: "" });
+    }
+    return out;
+  } catch { return null; }
+}
+
+async function buildMoments(home, away, tlCards) {
   const evs = [];
   const rosterA = new Set((home.Players || []).map(p => String(p.IdPlayer)));
   const rosterB = new Set((away.Players || []).map(p => String(p.IdPlayer)));
@@ -491,15 +511,20 @@ async function buildMoments(home, away) {
       const assist = (!og && g.IdAssistPlayer) ? await playerName(g.IdAssistPlayer) : "";
       evs.push({ min: minClean(g.Minute), team: side, type: og ? "og" : "goal", who, what: assist ? `Assist: ${assist}` : "" });
     }
-    for (const bk of t.Bookings || []) {
-      const card = Number(bk.Card);
-      if (card > 1) { // 2 = second yellow / straight red
-        evs.push({ min: minClean(bk.Minute), team: side, type: "red", who: await playerName(bk.IdPlayer), what: "" });
-      } else if (card === 1) { // 1 = yellow — now shown on the timeline too
-        evs.push({ min: minClean(bk.Minute), team: side, type: "yellow", who: await playerName(bk.IdPlayer), what: "" });
+    if (!tlCards) {   // fall back to the bookings SUMMARY only when the timeline gave us nothing
+      for (const bk of t.Bookings || []) {
+        const card = Number(bk.Card);
+        if (card > 1) { // 2 = second yellow / straight red
+          evs.push({ min: minClean(bk.Minute), team: side, type: "red", who: await playerName(bk.IdPlayer), what: "" });
+        } else if (card === 1) { // 1 = yellow
+          evs.push({ min: minClean(bk.Minute), team: side, type: "yellow", who: await playerName(bk.IdPlayer), what: "" });
+        }
       }
     }
   }
+  // cards from FIFA's timeline/play-by-play carry the NAME for every booking incl.
+  // coaches/staff (the bookings summary drops IdPlayer for those) — matches the live blog
+  if (tlCards) for (const c of tlCards) evs.push(c);
   evs.sort((a, b) => (parseInt(a.min) || 0) - (parseInt(b.min) || 0));
   if (evs.length > 10) {
     // keep every goal & red; drop the latest yellows first so the timeline stays meaningful
@@ -528,7 +553,8 @@ async function processMatch(cal) {
   const home = d.HomeTeam || {}, away = d.AwayTeam || {};
   const scoreA = home.Score ?? cal.HomeTeamScore, scoreB = away.Score ?? cal.AwayTeamScore;
 
-  let moments = await buildMoments(home, away);
+  const tlCards = await fifaCardsFromTimeline(IdSeason, IdStage, IdMatch, home.IdTeam);
+  let moments = await buildMoments(home, away, tlCards);
 
   // stats: layer sources best→fallback so the decided set fills as fully as possible.
   // Highlightly (richest) ▸ API-Football ▸ TheSportsDB ▸ manual. All key-gated.
