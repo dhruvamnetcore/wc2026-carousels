@@ -206,6 +206,7 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .cv-plate{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%) skewY(-6deg);background:rgba(8,8,14,.84);padding:calc(var(--u)*4) calc(var(--u)*76);z-index:6;display:flex;align-items:center;gap:calc(var(--u)*30);}
 .cv-score{font-family:'Anton',sans-serif;font-size:calc(var(--u)*290);line-height:1;color:#fff;}
 .cv-dash{font-family:'Anton',sans-serif;font-size:calc(var(--u)*150);color:#fff;opacity:.55;transform:translateY(calc(var(--u)*-14));}
+.cv-pens{position:absolute;left:50%;top:calc(50% + var(--u)*150);transform:translateX(-50%);z-index:7;background:rgba(8,8,14,.86);color:#fff;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:calc(var(--u)*32);letter-spacing:calc(var(--u)*3);padding:calc(var(--u)*10) calc(var(--u)*26);border-radius:calc(var(--u)*10);white-space:nowrap;}
 .cv-meta{position:absolute;bottom:calc(var(--u)*120);left:0;right:0;text-align:center;z-index:6;}
 .cv-meta span{display:inline-block;background:rgba(8,8,14,.7);color:#fff;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);letter-spacing:calc(var(--u)*2.5);padding:calc(var(--u)*12) calc(var(--u)*30);border-radius:calc(var(--u)*8);}
 
@@ -559,7 +560,7 @@ function resolveClash(A,B){
 const SLIDE_DEFS={cover:"Cover (FT scoreline)",moments:"In the Mins timeline",stats:"Match Stats",motm:"MOTM player card"};
 const S={
   teamA:"Argentina", teamB:"Mexico",
-  scoreA:2, scoreB:1, venue:"", date:"", comp:"Group C · Match 1", handle:"@fwc_2k26",
+  scoreA:2, scoreB:1, penA:null, penB:null, venue:"", date:"", comp:"Group C · Match 1", handle:"@fwc_2k26",
   pattern:"stripes", overlay:"none", grain:true, motmTint:false,
   order:["cover","moments","stats","motm"],
   enabled:{cover:true,moments:true,stats:true,motm:true},
@@ -811,6 +812,7 @@ function buildCover(A,B){
     <div class="cv-plate" style="border-left:14px solid ${A.primary};border-right:14px solid ${B.primary};">
       <span class="cv-score">${esc(S.scoreA)}</span><span class="cv-dash">–</span><span class="cv-score">${esc(S.scoreB)}</span>
     </div>
+    ${(S.penA!=null&&S.penB!=null)?`<div class="cv-pens">${esc(S.penA)}–${esc(S.penB)} ON PENALTIES</div>`:""}
     <div class="cv-teamB" style="color:${B.ink};font-size:calc(var(--u)*${fs(tB.n)});text-shadow:0 3px 14px ${alpha('#000000',0.25)};"><span>${esc(tB.n)}</span>${flagImg(tB)}</div>
     <div class="cv-meta"><span>${esc(S.venue)||"VENUE TBC"} · ${fmtDate(S.date)||"DATE"}</span></div>
     ${footer()}
@@ -974,6 +976,7 @@ function applyMatchJSON(d){
   if(b)S.teamB=b;else if(d.teamB)warn.push(`"${d.teamB}" isn't in the theme list — kept ${S.teamB}`);
   if(d.scoreA!=null)S.scoreA=d.scoreA;
   if(d.scoreB!=null)S.scoreB=d.scoreB;
+  S.penA=(d.penA!=null)?d.penA:null;S.penB=(d.penB!=null)?d.penB:null; // shootout score (set/clear each import)
   if(d.venue!=null)S.venue=d.venue;
   if(d.date)S.date=d.date;
   if(d.comp)S.comp=d.comp;

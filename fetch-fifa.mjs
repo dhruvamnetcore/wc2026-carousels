@@ -717,9 +717,13 @@ async function processMatch(cal) {
   if (tlGoals < total) review.push(`Timeline shows ${tlGoals} of ${total} goals — add the missing scorer(s) in the editor.`);
   if (statReview.length) review.push(`Stats not in the source — fill by hand: ${statReview.join(", ")}.`);
 
+  // penalty shootout result (knockouts decided on pens) -> shown on the scorecard
+  const pens = (Number(d.ResultType) === 2 && d.HomeTeamPenaltyScore != null && d.AwayTeamPenaltyScore != null)
+    ? { penA: parseInt(d.HomeTeamPenaltyScore), penB: parseInt(d.AwayTeamPenaltyScore) } : null;
   const out = {
     teamA: ourA, teamB: ourB,
     scoreA: parseInt(scoreA), scoreB: parseInt(scoreB),
+    ...(pens || {}),
     venue, date, comp,
     kickoff: String(cal.Date || cal.LocalDate || ""),   // full timestamp for precise "latest" ordering
     ...(CFG.handle ? { handle: CFG.handle } : {}),
