@@ -485,6 +485,7 @@ async function buildMoments(home, away) {
   for (const [side, t] of [["A", home], ["B", away]]) {
     const own = side === "A" ? rosterA : rosterB, opp = side === "A" ? rosterB : rosterA;
     for (const g of t.Goals || []) {
+      if (Number(g.Period) === 11) continue;   // Period 11 = penalty SHOOTOUT — not a match goal (shown as "x–y ON PENALTIES" instead)
       const who = await playerName(g.IdPlayer);
       const og = goalIsOwn(g, own, opp);
       const assist = (!og && g.IdAssistPlayer) ? await playerName(g.IdAssistPlayer) : "";
@@ -614,6 +615,7 @@ async function processMatch(cal) {
   const tally = {};
   for (const [side, t] of [["A", home], ["B", away]])
     for (const g of t.Goals || []) {
+      if (Number(g.Period) === 11) continue;          // shootout kicks aren't match goals — don't credit MOTM
       const own = side === "A" ? rosterA : rosterB, opp = side === "A" ? rosterB : rosterA;
       if (goalIsOwn(g, own, opp)) continue;          // skip own goals — don't credit the scorer
       const id = g.IdPlayer || `${side}-${g.Minute}`;
