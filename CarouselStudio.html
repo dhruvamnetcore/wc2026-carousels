@@ -322,6 +322,8 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
       <div class="fld"><small>Team B (right / bottom)</small><select id="teamB"></select></div>
       <div class="fld"><small>Score A</small><input id="scoreA" type="number" min="0" value="2"></div>
       <div class="fld"><small>Score B</small><input id="scoreB" type="number" min="0" value="1"></div>
+      <div class="fld"><small>Pen A <span style="opacity:.55">· shootout, leave blank if none</span></small><input id="penA" type="number" min="0" placeholder="—"></div>
+      <div class="fld"><small>Pen B <span style="opacity:.55">· shootout, leave blank if none</span></small><input id="penB" type="number" min="0" placeholder="—"></div>
       <div class="fld"><small>Venue</small><input id="venue" type="text" placeholder="Stadium, City"></div>
       <div class="fld"><small>Date</small><input id="mdate" type="date"></div>
       <div class="fld"><small>Competition label</small><input id="comp" type="text" value="International Friendly"></div>
@@ -580,6 +582,8 @@ $("mdate").value=new Date().toISOString().slice(0,10); S.date=$("mdate").value;
 
 [["teamA","teamA"],["teamB","teamB"],["scoreA","scoreA"],["scoreB","scoreB"],["venue","venue"],["mdate","date"],["comp","comp"],["handle","handle"]]
 .forEach(([id,key])=>{$(id).addEventListener("input",e=>{S[key]=e.target.value;drawOutput();});});
+// penalty shootout score: blank = no shootout (clears the cover line)
+["penA","penB"].forEach(id=>{$(id).addEventListener("input",e=>{const v=e.target.value.trim();S[id]=v===""?null:(parseInt(v)||0);drawOutput();});});
 
 function chipToggle(el,opts,get,set){
   el.innerHTML="";
@@ -977,6 +981,7 @@ function applyMatchJSON(d){
   if(d.scoreA!=null)S.scoreA=d.scoreA;
   if(d.scoreB!=null)S.scoreB=d.scoreB;
   S.penA=(d.penA!=null)?d.penA:null;S.penB=(d.penB!=null)?d.penB:null; // shootout score (set/clear each import)
+  $("penA").value=S.penA??"";$("penB").value=S.penB??""; // reflect pens in the editor boxes
   if(d.venue!=null)S.venue=d.venue;
   if(d.date)S.date=d.date;
   if(d.comp)S.comp=d.comp;
