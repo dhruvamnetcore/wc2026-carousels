@@ -563,6 +563,18 @@ async function processMatch(cal) {
       moments = keep.slice(0, 10);
     }
   }
+  // Drop penalty-SHOOTOUT kicks from ANY source: FIFA's have no minute; API-Football
+  // lists them as goals/pens at 120+'. A match that went to a shootout (ResultType 2)
+  // has no real goal at/after 120', so anything there is a shootout kick, not a match goal.
+  {
+    const wentToPens = Number(d.ResultType) === 2;
+    moments = moments.filter(m => {
+      if (!["goal", "pen", "og"].includes(m.type)) return true;        // keep cards
+      if (!String(m.min).trim()) return false;                         // shootout kick (no minute)
+      if (wentToPens && (parseInt(m.min) || 0) >= 120) return false;   // shootout kick timestamped 120+'
+      return true;
+    });
+  }
   const raw = { ...tsdb, ...af.stats, ...hl.stats, ...bdl.stats };   // BDL wins (most consistent), then HL, AF, tsdb
   const yc = [0, 0];
   [home, away].forEach((t, i) => (t.Bookings || []).forEach(bk => { if (Number(bk.Card) === 1) yc[i]++; }));
