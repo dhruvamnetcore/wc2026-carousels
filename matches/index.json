@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-30T22:47:49.221Z",
+  "updated": "2026-06-30T23:57:33.059Z",
   "matches": [
+    {
+      "file": "matches/2026-06-30-france-vs-sweden.json",
+      "teamA": "France",
+      "teamB": "Sweden",
+      "scoreA": 3,
+      "scoreB": 0,
+      "date": "2026-06-30",
+      "kickoff": "2026-06-30T21:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-30-ivory-coast-vs-norway.json",
       "teamA": "Ivory Coast",
