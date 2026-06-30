@@ -1,5 +1,5 @@
 {
-  "updated": "2026-06-30T15:08:39.932Z",
+  "updated": "2026-06-30T17:00:50.064Z",
   "matches": [
     {
       "file": "matches/2026-06-29-netherlands-vs-morocco.json",
@@ -9,7 +9,7 @@
       "scoreB": 1,
       "date": "2026-06-29",
       "kickoff": "2026-06-30T01:00:00Z",
-      "comp": "Round of 32",
+      "comp": "Round of 32 · 2–3 PENS",
       "status": "FT",
       "needsReview": true
     },
@@ -21,7 +21,7 @@
       "scoreB": 1,
       "date": "2026-06-29",
       "kickoff": "2026-06-29T20:30:00Z",
-      "comp": "Round of 32",
+      "comp": "Round of 32 · 3–4 PENS",
       "status": "FT",
       "needsReview": false
     },
