@@ -454,13 +454,16 @@ function etKickoff(iso) {
 }
 
 /* competition label, stage-led: "Group Stage · Group A" for group games,
-   or the knockout round name ("Round of 32", "Round of 16", "Final", …) */
+   or the knockout round name ("Round of 32", "Round of 16", "Final", …).
+   Knockouts decided on penalties (ResultType 2) get "· 1–3 PENS" appended. */
 function buildComp(m) {
   const g = desc(m.GroupName);
   const stage = desc(m.StageName);
-  if (g) return `Group Stage · ${g}`;     // group match
-  if (stage) return stage;                 // knockout — whatever FIFA calls the round
-  return "World Cup";                       // last-resort fallback
+  let base = g ? `Group Stage · ${g}`     // group match
+    : (stage || "World Cup");              // knockout round name, or fallback
+  if (Number(m.ResultType) === 2 && m.HomeTeamPenaltyScore != null && m.AwayTeamPenaltyScore != null)
+    base += ` · ${m.HomeTeamPenaltyScore}–${m.AwayTeamPenaltyScore} PENS`; // home–away shootout result
+  return base;
 }
 
 /* An own goal is listed under the team that BENEFITS, but the scoring player is
