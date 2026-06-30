@@ -1,6 +1,18 @@
 {
-  "updated": "2026-06-30T02:10:26.882Z",
+  "updated": "2026-06-30T06:36:55.996Z",
   "matches": [
+    {
+      "file": "matches/2026-06-29-netherlands-vs-morocco.json",
+      "teamA": "Netherlands",
+      "teamB": "Morocco",
+      "scoreA": 1,
+      "scoreB": 1,
+      "date": "2026-06-29",
+      "kickoff": "2026-06-30T01:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-29-germany-vs-paraguay.json",
       "teamA": "Germany",
