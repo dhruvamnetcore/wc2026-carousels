@@ -408,6 +408,7 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
     </div>
     <div class="grid" style="margin-top:10px;">
       <div class="fld"><small>Photo position <span style="opacity:.55">· move up / down to centre</span></small><input id="pmImgY" type="range" min="-25" max="35" value="4"></div>
+      <div class="fld"><small>Photo horizontal <span style="opacity:.55">· move left / right</span></small><input id="pmImgX" type="range" min="-30" max="30" value="0"></div>
       <div class="fld"><small>Photo zoom <span style="opacity:.55">· bigger / smaller</span></small><input id="pmImgZoom" type="range" min="110" max="240" value="158"></div>
     </div>
   </div>
@@ -574,7 +575,7 @@ const S={
   enabled:{cover:true,moments:true,stats:true,motm:true},
   moments:[{min:"23",team:"A",type:"goal",who:"",what:""}],
   stats:{Goals:[2,1],"Shots on target":[6,3],Possession:[55,45],"Passes completed":[412,388],Offsides:[2,4]},
-  motm:{name:"",pos:"CAM",rate:"9.2",team:"A",club:"",league:"",number:"",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null,imgY:4,imgZoom:158},
+  motm:{name:"",pos:"CAM",rate:"9.2",team:"A",club:"",league:"",number:"",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null,imgX:0,imgY:4,imgZoom:158},
 };
 const team=n=>TEAMS.find(t=>t.n===n)||TEAMS[0];
 
@@ -599,6 +600,7 @@ $("teamB").addEventListener("change",()=>{S.colorB=null;syncColorPickers();drawO
 syncColorPickers();
 // POTM photo framing — move the player up/down and zoom within the circle
 $("pmImgY").addEventListener("input",e=>{S.motm.imgY=+e.target.value;drawOutput();});
+$("pmImgX").addEventListener("input",e=>{S.motm.imgX=+e.target.value;drawOutput();});
 $("pmImgZoom").addEventListener("input",e=>{S.motm.imgZoom=+e.target.value;drawOutput();});
 
 function chipToggle(el,opts,get,set){
@@ -913,7 +915,7 @@ function buildMotm(A,B){
   const themeWash = `<span style="position:absolute;inset:0;background:linear-gradient(160deg, ${alpha(T.primary,.20)} 0%, ${alpha(T.accent,.14)} 100%);mix-blend-mode:soft-light;"></span><span style="position:absolute;inset:0;background:linear-gradient(180deg, transparent 58%, ${alpha('#05050a',.55)} 100%);"></span>`;
   const photo=S.motm.img
     ? `<div class="motm-photo" style="position:relative;overflow:hidden;background:${photoBg};">
-         <img src="${S.motm.img}" alt="" style="position:absolute;top:${S.motm.imgY}%;left:50%;transform:translateX(-50%);width:${S.motm.imgZoom}%;height:auto;${S.motmTint?"filter:contrast(1.04) saturate(1.06);":""}">
+         <img src="${S.motm.img}" alt="" style="position:absolute;top:${S.motm.imgY}%;left:calc(50% + ${S.motm.imgX||0}%);transform:translateX(-50%);width:${S.motm.imgZoom}%;height:auto;${S.motmTint?"filter:contrast(1.04) saturate(1.06);":""}">
          ${S.motmTint?themeWash:""}
        </div>`
     : `<div class="motm-photo ph" style="color:${alpha(T.ink,.5)};">👤</div>`;
@@ -1088,7 +1090,7 @@ function applyMatchJSON(d){
   }
   // a loaded match uses flag colours + default photo framing; reset the controls to match
   S.colorA=null;S.colorB=null;syncColorPickers();
-  S.motm.imgY=4;S.motm.imgZoom=158;$("pmImgY").value=4;$("pmImgZoom").value=158;
+  S.motm.imgX=0;S.motm.imgY=4;S.motm.imgZoom=158;$("pmImgX").value=0;$("pmImgY").value=4;$("pmImgZoom").value=158;
   renderMoments();renderStats();renderSlideCards();
   drawOutput();
   // surface data-gap flags written by the fetcher so you verify before posting
