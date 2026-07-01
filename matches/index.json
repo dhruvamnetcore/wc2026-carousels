@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-01T16:15:18.904Z",
+  "updated": "2026-07-01T18:21:43.220Z",
   "matches": [
+    {
+      "file": "matches/2026-07-01-england-vs-congo-dr.json",
+      "teamA": "England",
+      "teamB": "Congo DR",
+      "scoreA": 2,
+      "scoreB": 1,
+      "date": "2026-07-01",
+      "kickoff": "2026-07-01T16:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-06-30-mexico-vs-ecuador.json",
       "teamA": "Mexico",
