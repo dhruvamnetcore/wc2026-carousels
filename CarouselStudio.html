@@ -206,7 +206,7 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
 .cv-plate{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%) skewY(-6deg);background:rgba(8,8,14,.84);padding:calc(var(--u)*4) calc(var(--u)*76);z-index:6;display:flex;align-items:center;gap:calc(var(--u)*30);}
 .cv-score{font-family:'Anton',sans-serif;font-size:calc(var(--u)*290);line-height:1;color:#fff;}
 .cv-dash{font-family:'Anton',sans-serif;font-size:calc(var(--u)*150);color:#fff;opacity:.55;transform:translateY(calc(var(--u)*-14));}
-.cv-pens{position:absolute;left:50%;top:calc(50% + var(--u)*150);transform:translateX(-50%);z-index:7;background:rgba(8,8,14,.86);color:#fff;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:calc(var(--u)*32);letter-spacing:calc(var(--u)*3);padding:calc(var(--u)*10) calc(var(--u)*26);border-radius:calc(var(--u)*10);white-space:nowrap;}
+.cv-pens{position:absolute;left:50%;top:calc(50% + var(--u)*200);transform:translateX(-50%);z-index:7;background:rgba(8,8,14,.86);color:#fff;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:calc(var(--u)*32);letter-spacing:calc(var(--u)*3);padding:calc(var(--u)*10) calc(var(--u)*26);border-radius:calc(var(--u)*10);white-space:nowrap;}
 .cv-meta{position:absolute;bottom:calc(var(--u)*120);left:0;right:0;text-align:center;z-index:6;}
 .cv-meta span{display:inline-block;background:rgba(8,8,14,.7);color:#fff;font-family:'JetBrains Mono',monospace;font-size:calc(var(--u)*26);letter-spacing:calc(var(--u)*2.5);padding:calc(var(--u)*12) calc(var(--u)*30);border-radius:calc(var(--u)*8);}
 
@@ -324,6 +324,8 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
       <div class="fld"><small>Score B</small><input id="scoreB" type="number" min="0" value="1"></div>
       <div class="fld"><small>Pen A <span style="opacity:.55">· shootout, leave blank if none</span></small><input id="penA" type="number" min="0" placeholder="—"></div>
       <div class="fld"><small>Pen B <span style="opacity:.55">· shootout, leave blank if none</span></small><input id="penB" type="number" min="0" placeholder="—"></div>
+      <div class="fld"><small>Team A colour <span style="opacity:.55">· jersey override</span></small><input id="colorA" type="color" style="height:40px;padding:3px;cursor:pointer;"></div>
+      <div class="fld"><small>Team B colour <span style="opacity:.55">· jersey override</span></small><input id="colorB" type="color" style="height:40px;padding:3px;cursor:pointer;"></div>
       <div class="fld"><small>Venue</small><input id="venue" type="text" placeholder="Stadium, City"></div>
       <div class="fld"><small>Date</small><input id="mdate" type="date"></div>
       <div class="fld"><small>Competition label</small><input id="comp" type="text" value="International Friendly"></div>
@@ -403,6 +405,10 @@ input[type=file]::file-selector-button:hover{border-color:var(--acc);color:var(-
       <input id="pmPhoto" type="file" accept="image/*" style="width:auto;background:none;border:none;padding:0;color:#8b8f99;font-size:12px;">
       <img id="pmThumb" class="photo-thumb hidden" alt="">
       <button class="add" id="pmClear" style="padding:6px 12px;">Clear</button>
+    </div>
+    <div class="grid" style="margin-top:10px;">
+      <div class="fld"><small>Photo position <span style="opacity:.55">· move up / down to centre</span></small><input id="pmImgY" type="range" min="-25" max="35" value="4"></div>
+      <div class="fld"><small>Photo zoom <span style="opacity:.55">· bigger / smaller</span></small><input id="pmImgZoom" type="range" min="110" max="240" value="158"></div>
     </div>
   </div>
 
@@ -563,12 +569,12 @@ const SLIDE_DEFS={cover:"Cover (FT scoreline)",moments:"In the Mins timeline",st
 const S={
   teamA:"Argentina", teamB:"Mexico",
   scoreA:2, scoreB:1, penA:null, penB:null, venue:"", date:"", comp:"Group C · Match 1", handle:"@fwc_2k26",
-  pattern:"stripes", overlay:"none", grain:true, motmTint:false,
+  pattern:"stripes", overlay:"none", grain:true, motmTint:false, colorA:null, colorB:null,
   order:["cover","moments","stats","motm"],
   enabled:{cover:true,moments:true,stats:true,motm:true},
   moments:[{min:"23",team:"A",type:"goal",who:"",what:""}],
   stats:{Goals:[2,1],"Shots on target":[6,3],Possession:[55,45],"Passes completed":[412,388],Offsides:[2,4]},
-  motm:{name:"",pos:"CAM",rate:"9.2",team:"A",club:"",league:"",number:"",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null},
+  motm:{name:"",pos:"CAM",rate:"9.2",team:"A",club:"",league:"",number:"",chips:[["GOALS","2"],["ASSISTS","1"],["KEY PASSES","4"]],img:null,imgY:4,imgZoom:158},
 };
 const team=n=>TEAMS.find(t=>t.n===n)||TEAMS[0];
 
@@ -584,6 +590,16 @@ $("mdate").value=new Date().toISOString().slice(0,10); S.date=$("mdate").value;
 .forEach(([id,key])=>{$(id).addEventListener("input",e=>{S[key]=e.target.value;drawOutput();});});
 // penalty shootout score: blank = no shootout (clears the cover line)
 ["penA","penB"].forEach(id=>{$(id).addEventListener("input",e=>{const v=e.target.value.trim();S[id]=v===""?null:(parseInt(v)||0);drawOutput();});});
+// jersey-colour override: pickers start at each team's flag colour; reset when the team changes
+function syncColorPickers(){$("colorA").value=S.colorA||team(S.teamA).c[0];$("colorB").value=S.colorB||team(S.teamB).c[0];}
+$("colorA").addEventListener("input",e=>{S.colorA=e.target.value;drawOutput();});
+$("colorB").addEventListener("input",e=>{S.colorB=e.target.value;drawOutput();});
+$("teamA").addEventListener("change",()=>{S.colorA=null;syncColorPickers();drawOutput();});
+$("teamB").addEventListener("change",()=>{S.colorB=null;syncColorPickers();drawOutput();});
+syncColorPickers();
+// POTM photo framing — move the player up/down and zoom within the circle
+$("pmImgY").addEventListener("input",e=>{S.motm.imgY=+e.target.value;drawOutput();});
+$("pmImgZoom").addEventListener("input",e=>{S.motm.imgZoom=+e.target.value;drawOutput();});
 
 function chipToggle(el,opts,get,set){
   el.innerHTML="";
@@ -897,7 +913,7 @@ function buildMotm(A,B){
   const themeWash = `<span style="position:absolute;inset:0;background:linear-gradient(160deg, ${alpha(T.primary,.20)} 0%, ${alpha(T.accent,.14)} 100%);mix-blend-mode:soft-light;"></span><span style="position:absolute;inset:0;background:linear-gradient(180deg, transparent 58%, ${alpha('#05050a',.55)} 100%);"></span>`;
   const photo=S.motm.img
     ? `<div class="motm-photo" style="position:relative;overflow:hidden;background:${photoBg};">
-         <img src="${S.motm.img}" alt="" style="position:absolute;top:4%;left:50%;transform:translateX(-50%);width:158%;height:auto;${S.motmTint?"filter:contrast(1.04) saturate(1.06);":""}">
+         <img src="${S.motm.img}" alt="" style="position:absolute;top:${S.motm.imgY}%;left:50%;transform:translateX(-50%);width:${S.motm.imgZoom}%;height:auto;${S.motmTint?"filter:contrast(1.04) saturate(1.06);":""}">
          ${S.motmTint?themeWash:""}
        </div>`
     : `<div class="motm-photo ph" style="color:${alpha(T.ink,.5)};">👤</div>`;
@@ -933,7 +949,12 @@ function fitScale(){
 window.addEventListener("resize",fitScale);
 
 function drawOutput(){
-  let A=teamTheme(team(S.teamA)), B=teamTheme(team(S.teamB));
+  // jersey-colour override: swap a team's primary colour when the user picks one
+  const tA=team(S.teamA), tB=team(S.teamB);
+  const jersey=hex=>[hex,mix(hex,'#ffffff',0.72),mix(hex,'#000000',0.28)]; // clean theme from one picked colour
+  const oA=S.colorA?{...tA,c:jersey(S.colorA)}:tA;
+  const oB=S.colorB?{...tB,c:jersey(S.colorB)}:tB;
+  let A=teamTheme(oA), B=teamTheme(oB);
   [A,B]=resolveClash(A,B);   // break red-on-red (and any same-colour) clashes
   // the editor chrome follows the match: team colors + live scoreboard in the app bar
   const rs=document.documentElement.style;
@@ -1065,6 +1086,9 @@ function applyMatchJSON(d){
       S.motm.chips=arr;
     }
   }
+  // a loaded match uses flag colours + default photo framing; reset the controls to match
+  S.colorA=null;S.colorB=null;syncColorPickers();
+  S.motm.imgY=4;S.motm.imgZoom=158;$("pmImgY").value=4;$("pmImgZoom").value=158;
   renderMoments();renderStats();renderSlideCards();
   drawOutput();
   // surface data-gap flags written by the fetcher so you verify before posting
