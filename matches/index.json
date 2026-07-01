@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-01T02:55:00.048Z",
+  "updated": "2026-07-01T07:03:23.566Z",
   "matches": [
+    {
+      "file": "matches/2026-06-30-mexico-vs-ecuador.json",
+      "teamA": "Mexico",
+      "teamB": "Ecuador",
+      "scoreA": 2,
+      "scoreB": 0,
+      "date": "2026-06-30",
+      "kickoff": "2026-07-01T02:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-06-30-france-vs-sweden.json",
       "teamA": "France",

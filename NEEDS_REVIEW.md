@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Mexico 2–0 Ecuador — 2026-06-30
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Netherlands 1–1 Morocco — 2026-06-29
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
