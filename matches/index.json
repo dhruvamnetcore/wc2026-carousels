@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-01T21:56:34.299Z",
+  "updated": "2026-07-01T23:04:13.565Z",
   "matches": [
+    {
+      "file": "matches/2026-07-01-belgium-vs-senegal.json",
+      "teamA": "Belgium",
+      "teamB": "Senegal",
+      "scoreA": 3,
+      "scoreB": 2,
+      "date": "2026-07-01",
+      "kickoff": "2026-07-01T20:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-01-england-vs-congo-dr.json",
       "teamA": "England",
