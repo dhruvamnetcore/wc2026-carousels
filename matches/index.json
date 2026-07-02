@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-02T01:29:41.591Z",
+  "updated": "2026-07-02T05:32:06.972Z",
   "matches": [
+    {
+      "file": "matches/2026-07-01-usa-vs-bosnia-herzegovina.json",
+      "teamA": "USA",
+      "teamB": "Bosnia & Herzegovina",
+      "scoreA": 2,
+      "scoreB": 0,
+      "date": "2026-07-01",
+      "kickoff": "2026-07-02T00:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-07-01-belgium-vs-senegal.json",
       "teamA": "Belgium",
