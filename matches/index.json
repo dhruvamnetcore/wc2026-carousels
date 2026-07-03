@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-02T23:56:11.279Z",
+  "updated": "2026-07-03T02:00:50.702Z",
   "matches": [
+    {
+      "file": "matches/2026-07-02-portugal-vs-croatia.json",
+      "teamA": "Portugal",
+      "teamB": "Croatia",
+      "scoreA": 2,
+      "scoreB": 1,
+      "date": "2026-07-02",
+      "kickoff": "2026-07-02T23:00:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-02-spain-vs-austria.json",
       "teamA": "Spain",
