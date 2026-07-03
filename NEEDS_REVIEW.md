@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Switzerland 2–0 Algeria — 2026-07-02
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### USA 2–0 Bosnia & Herzegovina — 2026-07-01
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
