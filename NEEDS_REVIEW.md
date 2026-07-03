@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Australia 1–1 Egypt — 2026-07-03
+- Timeline shows 1 of 2 goals — add the missing scorer(s) in the editor.
+
 ### Switzerland 2–0 Algeria — 2026-07-02
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 

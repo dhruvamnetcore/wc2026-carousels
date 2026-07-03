@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-03T20:14:49.770Z",
+  "updated": "2026-07-03T21:38:06.174Z",
   "matches": [
+    {
+      "file": "matches/2026-07-03-australia-vs-egypt.json",
+      "teamA": "Australia",
+      "teamB": "Egypt",
+      "scoreA": 1,
+      "scoreB": 1,
+      "date": "2026-07-03",
+      "kickoff": "2026-07-03T18:00:00Z",
+      "comp": "Round of 32 · 2–4 PENS",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-07-02-switzerland-vs-algeria.json",
       "teamA": "Switzerland",
