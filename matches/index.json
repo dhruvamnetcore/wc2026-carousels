@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-04T02:01:42.378Z",
+  "updated": "2026-07-04T05:57:43.537Z",
   "matches": [
+    {
+      "file": "matches/2026-07-03-colombia-vs-ghana.json",
+      "teamA": "Colombia",
+      "teamB": "Ghana",
+      "scoreA": 1,
+      "scoreB": 0,
+      "date": "2026-07-03",
+      "kickoff": "2026-07-04T01:30:00Z",
+      "comp": "Round of 32",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-07-03-argentina-vs-cape-verde.json",
       "teamA": "Argentina",
