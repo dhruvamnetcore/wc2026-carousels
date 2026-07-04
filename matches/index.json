@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-04T22:25:36.993Z",
+  "updated": "2026-07-04T23:28:40.468Z",
   "matches": [
+    {
+      "file": "matches/2026-07-04-paraguay-vs-france.json",
+      "teamA": "Paraguay",
+      "teamB": "France",
+      "scoreA": 0,
+      "scoreB": 1,
+      "date": "2026-07-04",
+      "kickoff": "2026-07-04T21:00:00Z",
+      "comp": "Round of 16",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-04-canada-vs-morocco.json",
       "teamA": "Canada",
