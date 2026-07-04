@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Argentina 3–2 Cape Verde — 2026-07-03
+- Timeline shows 4 of 5 goals — add the missing scorer(s) in the editor.
+
 ### Australia 1–1 Egypt — 2026-07-03
 - Timeline shows 1 of 2 goals — add the missing scorer(s) in the editor.
 
