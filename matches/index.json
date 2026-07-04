@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-04T18:55:10.699Z",
+  "updated": "2026-07-04T20:04:35.693Z",
   "matches": [
+    {
+      "file": "matches/2026-07-04-canada-vs-morocco.json",
+      "teamA": "Canada",
+      "teamB": "Morocco",
+      "scoreA": 0,
+      "scoreB": 3,
+      "date": "2026-07-04",
+      "kickoff": "2026-07-04T17:00:00Z",
+      "comp": "Round of 16",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-03-colombia-vs-ghana.json",
       "teamA": "Colombia",
