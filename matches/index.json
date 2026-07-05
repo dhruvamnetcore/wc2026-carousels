@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-05T21:32:17.668Z",
+  "updated": "2026-07-05T22:50:42.262Z",
   "matches": [
+    {
+      "file": "matches/2026-07-05-brazil-vs-norway.json",
+      "teamA": "Brazil",
+      "teamB": "Norway",
+      "scoreA": 1,
+      "scoreB": 2,
+      "date": "2026-07-05",
+      "kickoff": "2026-07-05T20:00:00Z",
+      "comp": "Round of 16",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-04-paraguay-vs-france.json",
       "teamA": "Paraguay",
