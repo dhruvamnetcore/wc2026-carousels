@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-06T19:40:01.893Z",
+  "updated": "2026-07-06T21:20:19.182Z",
   "matches": [
+    {
+      "file": "matches/2026-07-06-portugal-vs-spain.json",
+      "teamA": "Portugal",
+      "teamB": "Spain",
+      "scoreA": 0,
+      "scoreB": 1,
+      "date": "2026-07-06",
+      "kickoff": "2026-07-06T19:00:00Z",
+      "comp": "Round of 16",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-05-mexico-vs-england.json",
       "teamA": "Mexico",
