@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-07T22:35:12.441Z",
+  "updated": "2026-07-07T23:45:56.294Z",
   "matches": [
+    {
+      "file": "matches/2026-07-07-switzerland-vs-colombia.json",
+      "teamA": "Switzerland",
+      "teamB": "Colombia",
+      "scoreA": 0,
+      "scoreB": 0,
+      "date": "2026-07-07",
+      "kickoff": "2026-07-07T20:00:00Z",
+      "comp": "Round of 16 · 4–3 PENS",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-07-07-argentina-vs-egypt.json",
       "teamA": "Argentina",

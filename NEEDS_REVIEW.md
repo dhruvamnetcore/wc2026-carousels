@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Switzerland 0–0 Colombia — 2026-07-07
+- MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
+
 ### USA 1–4 Belgium — 2026-07-06
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
