@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### USA 1–4 Belgium — 2026-07-06
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Mexico 2–3 England — 2026-07-05
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
