@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-07T17:50:58.555Z",
+  "updated": "2026-07-07T19:39:23.871Z",
   "matches": [
+    {
+      "file": "matches/2026-07-07-argentina-vs-egypt.json",
+      "teamA": "Argentina",
+      "teamB": "Egypt",
+      "scoreA": 3,
+      "scoreB": 2,
+      "date": "2026-07-07",
+      "kickoff": "2026-07-07T16:00:00Z",
+      "comp": "Round of 16",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-06-usa-vs-belgium.json",
       "teamA": "USA",
