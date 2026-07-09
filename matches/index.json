@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-09T20:59:44.822Z",
+  "updated": "2026-07-09T22:22:57.944Z",
   "matches": [
+    {
+      "file": "matches/2026-07-09-france-vs-morocco.json",
+      "teamA": "France",
+      "teamB": "Morocco",
+      "scoreA": 2,
+      "scoreB": 0,
+      "date": "2026-07-09",
+      "kickoff": "2026-07-09T20:00:00Z",
+      "comp": "Quarter-final",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-07-switzerland-vs-colombia.json",
       "teamA": "Switzerland",
