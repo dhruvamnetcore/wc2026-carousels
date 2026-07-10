@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-10T19:56:53.942Z",
+  "updated": "2026-07-10T21:01:45.742Z",
   "matches": [
+    {
+      "file": "matches/2026-07-10-spain-vs-belgium.json",
+      "teamA": "Spain",
+      "teamB": "Belgium",
+      "scoreA": 2,
+      "scoreB": 1,
+      "date": "2026-07-10",
+      "kickoff": "2026-07-10T19:00:00Z",
+      "comp": "Quarter-final",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-09-france-vs-morocco.json",
       "teamA": "France",
