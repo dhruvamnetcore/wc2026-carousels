@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### Argentina 3–1 Switzerland — 2026-07-11
+- Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
+
 ### Switzerland 0–0 Colombia — 2026-07-07
 - MOTM auto-picked the clean-sheet goalkeeper (no goalscorer) — confirm against the official award.
 

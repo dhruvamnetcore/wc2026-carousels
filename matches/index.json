@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-12T01:29:47.977Z",
+  "updated": "2026-07-12T04:53:31.392Z",
   "matches": [
+    {
+      "file": "matches/2026-07-11-argentina-vs-switzerland.json",
+      "teamA": "Argentina",
+      "teamB": "Switzerland",
+      "scoreA": 3,
+      "scoreB": 1,
+      "date": "2026-07-11",
+      "kickoff": "2026-07-12T01:00:00Z",
+      "comp": "Quarter-final",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-07-11-norway-vs-england.json",
       "teamA": "Norway",
