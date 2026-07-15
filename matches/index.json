@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-15T20:01:18.690Z",
+  "updated": "2026-07-15T21:27:25.909Z",
   "matches": [
+    {
+      "file": "matches/2026-07-15-england-vs-argentina.json",
+      "teamA": "England",
+      "teamB": "Argentina",
+      "scoreA": 1,
+      "scoreB": 2,
+      "date": "2026-07-15",
+      "kickoff": "2026-07-15T19:00:00Z",
+      "comp": "Semi-final",
+      "status": "FT",
+      "needsReview": false
+    },
     {
       "file": "matches/2026-07-14-france-vs-spain.json",
       "teamA": "France",
