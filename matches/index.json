@@ -1,6 +1,18 @@
 {
-  "updated": "2026-07-18T22:37:33.333Z",
+  "updated": "2026-07-18T23:41:48.290Z",
   "matches": [
+    {
+      "file": "matches/2026-07-18-france-vs-england.json",
+      "teamA": "France",
+      "teamB": "England",
+      "scoreA": 4,
+      "scoreB": 6,
+      "date": "2026-07-18",
+      "kickoff": "2026-07-18T21:00:00Z",
+      "comp": "Bronze final",
+      "status": "FT",
+      "needsReview": true
+    },
     {
       "file": "matches/2026-07-15-england-vs-argentina.json",
       "teamA": "England",

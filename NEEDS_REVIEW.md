@@ -2,6 +2,9 @@
 
 _Auto-generated each run. These matches have data gaps — open them in Carousel Studio, verify, and fill anything missing before posting. Everything not listed looked complete._
 
+### France 4–6 England — 2026-07-18
+- Timeline shows 9 of 10 goals — add the missing scorer(s) in the editor.
+
 ### Argentina 3–1 Switzerland — 2026-07-11
 - Stats not in the source — fill by hand: Shots on target, Possession, Passes completed, Offsides.
 
